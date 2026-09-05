@@ -195,6 +195,7 @@
             padding: 5px 8px;
             border-bottom: 1px solid rgba(255,255,255,0.05);
             font-size: 13px;
+            align-items: center;
         }
 
         .board {
@@ -243,6 +244,20 @@
             padding: 4px;
             background: rgba(0,0,0,0.3);
             border-radius: 8px;
+        }
+
+        /* کادر زرد برای پیام مالک */
+        .chat-msg-owner {
+            background: rgba(255, 193, 7, 0.15);
+            border: 1px solid rgba(255, 193, 7, 0.6);
+            border-radius: 6px;
+            padding: 3px 6px;
+            margin-bottom: 4px;
+        }
+
+        .chat-msg-normal {
+            padding: 3px 6px;
+            margin-bottom: 4px;
         }
 
         .chat-input-row {
@@ -379,7 +394,10 @@
             <div class="cell" onclick="makeMove(8)"></div>
         </div>
 
-        <div id="turn-indicator" style="font-family: 'Lalezar', cursive; font-size: 20px; color: #ffeb3b; margin-bottom: 10px;">نوبت شماست!</div>
+        <div id="turn-indicator" style="font-family: 'Lalezar', cursive; font-size: 20px; color: #ffeb3b; margin-bottom: 8px;">نوبت شماست!</div>
+        
+        <!-- دکمه خروج و تسلیم از بازی -->
+        <button class="neon-btn danger-btn" style="padding: 8px; font-size: 15px; margin-bottom: 10px;" onclick="confirmSurrender()">🚪 خروج و پذیرش باخت</button>
 
         <div class="chat-box">
             <div class="chat-messages" id="chat-messages"></div>
@@ -475,7 +493,11 @@
         allUsersCache.forEach(u => {
             const row = document.createElement('div');
             row.className = 'user-row-admin';
-            row.innerHTML = `<span>${u.username} (سکه: ${u.isOwner ? 'بی‌نهایت' : u.coins})</span> <button class="neon-btn" style="width: auto; padding: 4px 10px; font-size: 13px;" onclick="changeUserCoins('${u.username}')">تغییر سکه</button>`;
+            let nameDisplay = u.username;
+            if (u.isOwner) {
+                nameDisplay += ` <span class="verified-badge">✓</span>`;
+            }
+            row.innerHTML = `<span>${nameDisplay} (سکه: ${u.isOwner ? 'بی‌نهایت' : u.coins})</span> <button class="neon-btn" style="width: auto; padding: 4px 10px; font-size: 13px;" onclick="changeUserCoins('${u.username}')">تغییر سکه</button>`;
             listDiv.appendChild(row);
         });
     }
@@ -510,6 +532,12 @@
         document.getElementById('waiting-section').classList.add('hidden');
         document.getElementById('menu-section').classList.remove('hidden');
     });
+
+    function confirmSurrender() {
+        if (confirm('آیا مطمئن هستید که می‌خواهید خارج شوید؟ با این کار بازی را می‌بازید و سکه و کاپ به حریف می‌رسد!')) {
+            socket.emit('surrender_game', { roomId: currentRoomId });
+        }
+    }
 
     socket.on('game_start', (data) => {
         currentRoomId = data.roomId;
@@ -549,7 +577,7 @@
             if (data.isDraw) {
                 alert('🤝 بازی مساوی شد! سکه‌های ورودی برگشت داده شد و کاپی تغییر نکرد.');
             } else {
-                alert(`🏆 برنده: ${data.winnerName}`);
+                alert(`🏆 پایان بازی!\nبرنده: ${data.winnerName}`);
             }
             document.getElementById('game-section').classList.add('hidden');
             document.getElementById('menu-section').classList.remove('hidden');
@@ -564,9 +592,24 @@
         input.value = '';
     }
 
-    socket.on('receive_chat', ({ username, message }) => {
+    socket.on('receive_chat', ({ username, message, isOwner }) => {
         const chatBox = document.getElementById('chat-messages');
-        chatBox.innerHTML += `<div><b>${username}:</b> ${message}</div>`;
+        const msgDiv = document.createElement('div');
+        
+        let nameDisplay = username;
+        if (isOwner) {
+            nameDisplay += ` <span class="verified-badge">✓</span>`;
+        }
+
+        if (isOwner) {
+            msgDiv.className = 'chat-msg-owner';
+            msgDiv.innerHTML = `<b>👑 ${nameDisplay}:</b> ${message}`;
+        } else {
+            msgDiv.className = 'chat-msg-normal';
+            msgDiv.innerHTML = `<b>${nameDisplay}:</b> ${message}`;
+        }
+
+        chatBox.appendChild(msgDiv);
         chatBox.scrollTop = chatBox.scrollHeight;
     });
 
