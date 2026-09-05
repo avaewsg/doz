@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دوز آنلاین خفن</title>
+    <title>بازی دوز آنلاین دو مرحله‌ای</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap');
         body {
@@ -14,26 +14,27 @@
             margin: 0;
             padding: 20px;
         }
-        .container { max-width: 400px; margin: auto; }
+        .container { max-width: 420px; margin: auto; }
         .card {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 15px;
             padding: 20px;
             backdrop-filter: blur(10px);
-            box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+            box-shadow: 0 0 25px rgba(0, 243, 255, 0.15);
             margin-bottom: 20px;
         }
         input {
-            width: 80%;
+            width: 85%;
             padding: 12px;
             border-radius: 8px;
-            border: none;
-            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            background: rgba(255,255,255,0.07);
             color: #fff;
             font-size: 16px;
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            outline: none;
         }
         button {
             background: linear-gradient(45deg, #00f3ff, #7000ff);
@@ -44,7 +45,7 @@
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
-            box-shadow: 0 0 15px rgba(112, 0, 255, 0.5);
+            box-shadow: 0 0 15px rgba(112, 0, 255, 0.4);
             transition: 0.2s;
         }
         button:active { transform: scale(0.95); }
@@ -55,20 +56,22 @@
             margin: 20px 0;
         }
         .cell {
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.4);
             border: 2px solid rgba(0, 243, 255, 0.3);
-            border-radius: 10px;
+            border-radius: 12px;
             height: 90px;
-            font-size: 40px;
+            font-size: 42px;
+            font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: 0.3s;
+            transition: 0.2s;
         }
-        .cell:hover { background: rgba(0, 243, 255, 0.1); border-color: #00f3ff; }
+        .cell:hover { background: rgba(0, 243, 255, 0.1); border-color: #00f3ff; transform: scale(1.03); }
         .hidden { display: none !important; }
-        .stats { display: flex; justify-content: space-around; font-weight: bold; font-size: 18px; margin-bottom: 10px; }
+        .stats { display: flex; justify-content: space-around; font-weight: bold; font-size: 18px; margin-bottom: 15px; color: #00f3ff; }
+        .badge { background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 20px; }
     </style>
 </head>
 <body>
@@ -76,8 +79,8 @@
 <div class="container">
     <!-- بخش ورود و نام کاربری -->
     <div id="login-section" class="card">
-        <h2>ورود به دنیای دوز</h2>
-        <p>نام کاربری خود را وارد کنید (ذخیره می‌شود):</p>
+        <h2>⚡ ورود به دوز آنلاین</h2>
+        <p>نام خود را وارد کنید (دفعه بعد ذخیره می‌ماند):</p>
         <input type="text" id="username-input" placeholder="مثلا: کیا_گیمر">
         <br>
         <button onclick="login()">ورود به بازی</button>
@@ -86,26 +89,26 @@
     <!-- منوی اصلی و پروفایل -->
     <div id="menu-section" class="card hidden">
         <div class="stats">
-            <div>🪙 سکه: <span id="coins-val">40</span></div>
-            <div>🏆 کاپ: <span id="trophies-val">0</span></div>
+            <div class="badge">🪙 سکه: <span id="coins-val">40</span></div>
+            <div class="badge">🏆 کاپ: <span id="trophies-val">0</span></div>
         </div>
-        <h3 id="welcome-user">سلام</h3>
-        <p>ورودی بازی: 10 سکه | جایزه برنده: 80 سکه</p>
-        <button onclick="findGame()">بازی آنلاین (دوز دو مرحله‌ای)</button>
+        <h3 id="welcome-user" style="margin-bottom: 5px;">سلام</h3>
+        <p style="color: #aaa; font-size: 14px;">ورودی: ۱۰ سکه | جایزه برنده: ۸۰ سکه + ۴۰ کاپ</p>
+        <button onclick="findGame()" style="width: 100%; margin-top: 10px;">شروع بازی آنلاین 🚀</button>
     </div>
 
-    <!-- صفحه جستجو / انتظار -->
+    <!-- صفحه انتظار برای حریف -->
     <div id="waiting-section" class="card hidden">
-        <h2>در حال جستجوی حریف...</h2>
-        <p>اگر کسی آنلاین نبود، منتظر بمانید یا لغو کنید.</p>
-        <button onclick="cancelSearch()" style="background: #ff4757;">لغو جستجو</button>
+        <h2>⏳ در حال جستجوی حریف...</h2>
+        <p style="color: #aaa; font-size: 14px;">لطفاً منتظر بمانید تا بازیکن دیگری وارد شود.</p>
+        <button onclick="cancelSearch()" style="background: #ff4757; box-shadow: 0 0 15px rgba(255, 71, 87, 0.4);">لغو جستجو و برگشت</button>
     </div>
 
     <!-- صفحه بازی -->
     <div id="game-section" class="card hidden">
-        <div id="round-info" style="color: #00f3ff; font-weight: bold;">دوز شماره ۱</div>
-        <div class="stats" style="margin-top: 10px;">
-            <span id="p1-name">شما</span> vs <span id="p2-name">حریف</span>
+        <div id="round-info" style="color: #00f3ff; font-weight: bold; font-size: 16px;">دوز شماره ۱ از ۲</div>
+        <div class="stats" style="margin-top: 10px; font-size: 15px;">
+            <span id="p1-name" style="color: #00f3ff;">شما</span> vs <span id="p2-name" style="color: #ff4757;">حریف</span>
         </div>
         <div class="board" id="game-board">
             <div class="cell" onclick="makeMove(0)"></div>
@@ -118,7 +121,7 @@
             <div class="cell" onclick="makeMove(7)"></div>
             <div class="cell" onclick="makeMove(8)"></div>
         </div>
-        <div id="turn-indicator">نوبت شماست!</div>
+        <div id="turn-indicator" style="font-weight: bold; font-size: 17px; color: #ffeb3b;">نوبت شماست!</div>
     </div>
 </div>
 
@@ -128,7 +131,7 @@
     let currentRoomId = null;
     let myTurn = false;
 
-    // بررسی لوکال استوریج برای ذخیره نام
+    // خودکار پر کردن نام اگر قبلاً ذخیره شده باشد
     window.onload = () => {
         const savedName = localStorage.getItem('kiarash_tictactoe_username');
         if (savedName) {
@@ -138,7 +141,7 @@
 
     function login() {
         const username = document.getElementById('username-input').value.trim();
-        if (!username) return alert('لطفا نام کاربری وارد کنید');
+        if (!username) return alert('لطفا نام کاربری خود را وارد کنید');
         localStorage.setItem('kiarash_tictactoe_username', username);
         socket.emit('login', username);
     }
@@ -146,7 +149,7 @@
     socket.on('init_data', (user) => {
         document.getElementById('login-section').classList.add('hidden');
         document.getElementById('menu-section').classList.remove('hidden');
-        document.getElementById('welcome-user').innerText = `خوش آمدی، ${user.username}`;
+        document.getElementById('welcome-user').innerText = `سلام، ${user.username}`;
         updateStatsUI(user);
     });
 
@@ -178,10 +181,6 @@
         document.getElementById('menu-section').classList.remove('hidden');
     });
 
-    socket.on('waiting_for_opponent', () => {
-        // همچنان در صفحه انتظار می‌ماند تا حریف پیدا شود
-    });
-
     socket.on('game_start', (data) => {
         currentRoomId = data.roomId;
         document.getElementById('waiting-section').classList.add('hidden');
@@ -192,8 +191,13 @@
         const opponentId = playerIds.find(id => id !== socket.id);
         document.getElementById('p2-name').innerText = data.players[opponentId];
         
+        // پاک کردن صفحه تخته برای بازی جدید
+        const cells = document.getElementsByClassName('cell');
+        for (let c of cells) c.innerText = '';
+
         myTurn = (data.turn === socket.id);
-        document.getElementById('turn-indicator').innerText = myTurn ? 'نوبت شماست!' : 'نوبت حریف است...';
+        document.getElementById('turn-indicator').innerText = myTurn ? '🟢 نوبت شماست!' : '⏳ نوبت حریف است...';
+        document.getElementById('round-info').innerText = 'دوز شماره ۱ از ۲';
     });
 
     function makeMove(index) {
@@ -205,9 +209,11 @@
         const cells = document.getElementsByClassName('cell');
         for (let i = 0; i < 9; i++) {
             cells[i].innerText = data.board[i] || '';
+            if(data.board[i] === 'X') cells[i].style.color = '#00f3ff';
+            else if(data.board[i] === 'O') cells[i].style.color = '#ff4757';
         }
         myTurn = (data.turn === socket.id);
-        document.getElementById('turn-indicator').innerText = myTurn ? 'نوبت شماست!' : 'نوبت حریف است...';
+        document.getElementById('turn-indicator').innerText = myTurn ? '🟢 نوبت شماست!' : '⏳ نوبت حریف است...';
     });
 
     socket.on('round_over', (data) => {
@@ -215,17 +221,23 @@
         for (let i = 0; i < 9; i++) {
             cells[i].innerText = data.board[i] || '';
         }
-        document.getElementById('round-info').innerText = `دوز شماره ${data.round} تمام شد! شروع راند بعدی...`;
+        document.getElementById('round-info').innerText = `✅ دوز شماره ${data.round} تمام شد! شروع دوز دوم...`;
+        setTimeout(() => {
+            for (let c of cells) c.innerText = '';
+        }, 1500);
     });
 
-    socket.on('game_over', (data) => {
-        alert(`بازی تمام شد!\nبرنده: ${data.winner}`);
-        document.getElementById('game-section').classList.add('hidden');
-        document.getElementById('menu-section').classList.remove('hidden');
-        document.getElementById('round-info').innerText = 'دوز شماره ۱';
-        // پاکسازی تخته بازی
+    socket.on('game_over_final', (data) => {
         const cells = document.getElementsByClassName('cell');
-        for (let c of cells) c.innerText = '';
+        for (let i = 0; i < 9; i++) {
+            cells[i].innerText = data.board[i] || '';
+        }
+        
+        setTimeout(() => {
+            alert(`🎉 بازی دو مرحله‌ای تمام شد!\n\n🏆 برنده نهایی: ${data.winnerName}`);
+            document.getElementById('game-section').classList.add('hidden');
+            document.getElementById('menu-section').classList.remove('hidden');
+        }, 500);
     });
 </script>
 
