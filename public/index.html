@@ -268,28 +268,6 @@
         .cell.x { color: #00f3ff; text-shadow: 0 0 15px rgba(0,243,255,0.6); }
         .cell.o { color: #ff007f; text-shadow: 0 0 15px rgba(255,0,127,0.6); }
 
-        /* استایل‌های مربوط به اسکین‌های جدید */
-        .skins-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-        }
-        .skin-option {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1.5px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .skin-option.active {
-            border-color: #00f3ff;
-            background: rgba(0, 243, 255, 0.1);
-            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
-        }
-        .skin-option span { font-size: 11px; color: #cbd5e1; display: block; margin-top: 4px; font-family: 'Lalezar'; }
-
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 100;
@@ -364,25 +342,6 @@
         </div>
 
         <div class="right-sidebar">
-            <!-- بخش انتخاب اسکین‌های رایگان -->
-            <div class="dash-card" style="gap: 10px;">
-                <div class="dash-title">🎨 انتخاب اسکین‌ها</div>
-                <div class="skins-grid">
-                    <div class="skin-option active" id="skin-classic" onclick="selectSkin('classic', this)">
-                        <div style="font-size: 18px;">❌⭕</div>
-                        <span>عادی (پیش‌فرض)</span>
-                    </div>
-                    <div class="skin-option" id="skin-fire" onclick="selectSkin('fire', this)">
-                        <div style="font-size: 18px;">🔥💧</div>
-                        <span>آتش و آب</span>
-                    </div>
-                    <div class="skin-option" id="skin-neon" onclick="selectSkin('neon', this)">
-                        <div style="font-size: 18px;">⚡💎</div>
-                        <span>نئون و الماس</span>
-                    </div>
-                </div>
-            </div>
-
             <div class="dash-card" style="gap: 10px;">
                 <div class="dash-title">⚔️ بخش آنلاین (مسابقه ۳ دسته)</div>
                 <p style="font-size: 11px; color: #94a3b8;">ورودی: ۱۰ سکه | جایزه: ۸۰ سکه</p>
@@ -460,29 +419,6 @@
     const socket = io();
     let currentRoomId = null;
     let matchPlayersInfo = {};
-    
-    // مدیریت اسکین‌ها
-    let currentSkin = 'classic';
-    const skinSymbols = {
-        classic: { X: 'X', O: 'O' },
-        fire:    { X: '🔥', O: '💧' },
-        neon:    { X: '⚡', O: '💎' }
-    };
-
-    function selectSkin(skinName, element) {
-        currentSkin = skinName;
-        document.querySelectorAll('.skin-option').forEach(el => el.classList.remove('active'));
-        element.classList.add('active');
-    }
-
-    function getFormattedSymbol(val) {
-        if (!val) return '';
-        if (skinSymbols[currentSkin]) {
-            if (val === 'X') return skinSymbols[currentSkin].X;
-            if (val === 'O') return skinSymbols[currentSkin].O;
-        }
-        return val;
-    }
 
     function registerUser() {
         const username = document.getElementById('username-input').value;
@@ -628,7 +564,7 @@
     function renderBotBoard(board) {
         const cells = document.querySelectorAll('#bot-game-board .cell');
         for (let i = 0; i < 9; i++) {
-            cells[i].innerText = getFormattedSymbol(board[i]);
+            cells[i].innerText = board[i] || '';
             cells[i].className = 'cell';
             if (board[i] === 'X') cells[i].classList.add('x');
             if (board[i] === 'O') cells[i].classList.add('o');
@@ -638,7 +574,7 @@
     function findGame() {
         document.getElementById('dashboard-section').classList.add('hidden');
         document.getElementById('waiting-section').classList.remove('hidden');
-        renderBoard(Array(9).fill(null)); 
+        renderBoard(Array(9).fill(null)); // پاک کردن تخته به محض ورود به صف جستجو
         socket.emit('find_game');
     }
     
@@ -649,6 +585,7 @@
         document.getElementById('dashboard-section').classList.remove('hidden');
     });
 
+    // شروع بازی آنلاین با ریست کامل اطلاعات قبلی
     socket.on('game_start', (d) => {
         currentRoomId = d.roomId;
         matchPlayersInfo = d.players;
@@ -658,9 +595,10 @@
         const p1Id = Object.keys(d.players)[0];
         const p2Id = Object.keys(d.players)[1];
         
-        document.getElementById('p1-name').innerText = `${d.players[p1Id]} (${getFormattedSymbol('X')})`;
-        document.getElementById('p2-name').innerText = `${d.players[p2Id]} (${getFormattedSymbol('O')})`;
+        document.getElementById('p1-name').innerText = `${d.players[p1Id]} (X)`;
+        document.getElementById('p2-name').innerText = `${d.players[p2Id]} (O)`;
         
+        // پاکسازی تخته و بازنشانی راند به ۱
         updateGameUIState(d.board, d.turnName, d.scores, d.round || 1);
     });
 
@@ -682,7 +620,7 @@
         updateScoreboard(d.scores);
         setTimeout(() => {
             alert(d.isDraw ? '🤝 مساوی کل مسابقه!' : `🏆 برنده نهایی مسابقه: ${d.winnerName}`);
-            currentRoomId = null; 
+            currentRoomId = null; // ریست شناسه اتاق برای جلوگیری از تداخل در بازی بعدی
             matchPlayersInfo = {};
             document.getElementById('game-section').classList.add('hidden');
             document.getElementById('dashboard-section').classList.remove('hidden');
@@ -724,11 +662,11 @@
     function renderBoard(board) {
         const cells = document.querySelectorAll('#game-board .cell');
         for (let i = 0; i < 9; i++) {
-            const rawVal = (board && board[i]) ? board[i] : '';
-            cells[i].innerText = getFormattedSymbol(rawVal);
+            const val = (board && board[i]) ? board[i] : '';
+            cells[i].innerText = val;
             cells[i].className = 'cell';
-            if (rawVal === 'X') cells[i].classList.add('x');
-            if (rawVal === 'O') cells[i].classList.add('o');
+            if (val === 'X') cells[i].classList.add('x');
+            if (val === 'O') cells[i].classList.add('o');
         }
     }
 </script>
