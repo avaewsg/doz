@@ -156,7 +156,6 @@
             filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.7));
         }
 
-        /* تیک آبی رسمی تلگرامی */
         .verified-badge {
             display: inline-flex;
             align-items: center;
@@ -246,7 +245,6 @@
             border-radius: 8px;
         }
 
-        /* کادر زرد برای پیام مالک */
         .chat-msg-owner {
             background: rgba(255, 193, 7, 0.15);
             border: 1px solid rgba(255, 193, 7, 0.6);
@@ -323,7 +321,6 @@
 <body>
 
 <div class="container">
-    <!-- ۱. صفحه ورود و ثبت‌نام -->
     <div id="login-section" class="card">
         <h2>DozX</h2>
         <p>لطفاً وارد شوید یا ثبت‌نام کنید:</p>
@@ -339,7 +336,6 @@
         </div>
     </div>
 
-    <!-- ۲. منوی اصلی -->
     <div id="menu-section" class="card hidden">
         <h3 id="welcome-user" style="font-size: 22px; font-family: 'Lalezar', cursive; color: #00f3ff; margin-bottom: 10px;">سلام</h3>
         
@@ -367,7 +363,6 @@
         <button class="neon-btn" onclick="findGame()">شروع بازی آنلاین 🎮</button>
     </div>
 
-    <!-- ۳. صفحه انتظار -->
     <div id="waiting-section" class="card hidden">
         <h2>در حال جستجوی حریف...</h2>
         <div class="loader"></div>
@@ -375,7 +370,6 @@
         <button class="neon-btn danger-btn" onclick="cancelSearch()">لغو جستجو</button>
     </div>
 
-    <!-- ۴. صفحه بازی و چت -->
     <div id="game-section" class="card hidden">
         <div class="stats-row" style="margin-bottom: 10px; font-size: 13px;">
             <div class="stat-badge" style="color: #00f3ff;" id="p1-name">شما</div>
@@ -394,9 +388,9 @@
             <div class="cell" onclick="makeMove(8)"></div>
         </div>
 
-        <div id="turn-indicator" style="font-family: 'Lalezar', cursive; font-size: 20px; color: #ffeb3b; margin-bottom: 8px;">نوبت شماست!</div>
+        <div id="turn-indicator" style="font-family: 'Lalezar', cursive; font-size: 18px; color: #ffeb3b; margin-bottom: 4px;">نوبت شماست!</div>
+        <div id="timer-display" style="font-size: 13px; color: #00f3ff; margin-bottom: 8px;">⏰ زمان باقی‌مانده: <span id="time-left">30</span> ثانیه</div>
         
-        <!-- دکمه خروج و تسلیم از بازی -->
         <button class="neon-btn danger-btn" style="padding: 8px; font-size: 15px; margin-bottom: 10px;" onclick="confirmSurrender()">🚪 خروج و پذیرش باخت</button>
 
         <div class="chat-box">
@@ -409,7 +403,6 @@
     </div>
 </div>
 
-<!-- پنل مدیریت ادمین -->
 <div id="admin-modal" class="modal hidden">
     <div class="modal-content">
         <h3 style="font-family: 'Lalezar', cursive; color: #ffa502; margin-top: 0;">مدیریت کاربران و سکه‌ها</h3>
@@ -423,6 +416,7 @@
     const socket = io();
     let currentRoomId = null;
     let myTurn = false;
+    let turnInterval = null;
 
     function registerUser() {
         const username = document.getElementById('username-input').value.trim();
@@ -556,8 +550,7 @@
             c.className = 'cell';
         }
 
-        myTurn = (data.turn === socket.id);
-        document.getElementById('turn-indicator').innerText = myTurn ? '🟢 نوبت شماست!' : '⏳ نوبت حریف است...';
+        setupTurnState(data.turn, data.timeLeft);
     });
 
     function makeMove(index) {
@@ -567,11 +560,41 @@
 
     socket.on('update_board', (data) => {
         renderBoard(data.board);
-        myTurn = (data.turn === socket.id);
-        document.getElementById('turn-indicator').innerText = myTurn ? '🟢 نوبت شماست!' : '⏳ نوبت حریف است...';
+        setupTurnState(data.turn, data.timeLeft);
     });
 
+    socket.on('chat_system_alert', (msg) => {
+        const chatBox = document.getElementById('chat-messages');
+        const msgDiv = document.createElement('div');
+        msgDiv.style.color = '#ffeb3b';
+        msgDiv.style.fontSize = '11px';
+        msgDiv.innerHTML = `⚠️ <b>سیستم:</b> ${msg}`;
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    });
+
+    function setupTurnState(turnSocketId, timeLeft) {
+        if (turnInterval) clearInterval(turnInterval);
+
+        myTurn = (turnSocketId === socket.id);
+        document.getElementById('turn-indicator').innerText = myTurn ? '🟢 نوبت شماست!' : '⏳ نوبت حریف است...';
+
+        let currentSec = timeLeft || 30;
+        document.getElementById('time-left').innerText = currentSec;
+
+        turnInterval = setInterval(() => {
+            currentSec--;
+            if (currentSec >= 0) {
+                document.getElementById('time-left').innerText = currentSec;
+            }
+            if (currentSec <= 0) {
+                clearInterval(turnInterval);
+            }
+        }, 1000);
+    }
+
     socket.on('game_over', (data) => {
+        if (turnInterval) clearInterval(turnInterval);
         renderBoard(data.board);
         setTimeout(() => {
             if (data.isDraw) {
