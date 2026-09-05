@@ -10,9 +10,13 @@ const io = new Server(server);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-const DB_FILE = path.join(__dirname, 'database.json');
+// تنظیم مسیر دیتابیس برای پشتیبانی از ولوم رایلی (/data) یا لوکال
+const DATA_DIR = process.env.RAILWAY_VOLUME_MOUNT_PATH || __dirname;
+const DB_FILE = path.join(DATA_DIR, 'database.json');
 
 let db = { users: {} };
+
+// بارگذاری پایگاه داده از روی دیسک
 if (fs.existsSync(DB_FILE)) {
     try {
         db = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
@@ -22,7 +26,12 @@ if (fs.existsSync(DB_FILE)) {
 }
 
 function saveDB() {
-    fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+    try {
+        // اگر پوشه /data وجود نداشت (حالت لوکال)، مشکلی نیست ولی روی رایلی پوشه وجود دارد
+        fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+    } catch (e) {
+        console.log('خطا در ذخیره دیتابیس:', e);
+    }
 }
 
 let waitingPlayers = [];
@@ -157,7 +166,6 @@ io.on('connection', (socket) => {
             }
 
             if (finalWinnerSocket) {
-                // اگر برنده مشخص شد
                 const loserSocket = finalWinnerSocket === p1Socket ? p2Socket : p1Socket;
                 const winnerUser = db.users[finalWinnerSocket === p1Socket ? u1 : u2];
                 const loserUser = db.users[loserSocket === p1Socket ? u1 : u2];
@@ -180,7 +188,7 @@ io.on('connection', (socket) => {
                 broadcastLeaderboard();
                 delete activeGames[roomId];
             } else {
-                // اگر بازی مساوی شد: بازگشت سکه‌ها و بدون تغییر کاپ (انگار بازی نکردن)
+                // مساوی شدن و برگشت سکه‌ها
                 const user1 = db.users[u1];
                 const user2 = db.users[u2];
 
