@@ -14,7 +14,7 @@ const DATA_DIR = process.env.RAILWAY_VOLUME_MOUNT_PATH || __dirname;
 const DB_FILE = path.join(DATA_DIR, 'database.json');
 
 let db = { users: {} };
-let globalChat = []; // آرشیو چت عمومی
+let globalChat = [];
 
 if (fs.existsSync(DB_FILE)) {
     try {
@@ -32,7 +32,7 @@ function saveDB() {
     }
 }
 
-// پاکسازی چت عمومی هر ۳ ساعت یک‌بار
+// پاکسازی خودکار چت عمومی هر ۳ ساعت
 setInterval(() => {
     globalChat = [];
     io.emit('global_chat_cleared', 'پاکسازی چت انجام شد؛ تاریخچه پیام‌ها ریست شد.');
@@ -41,7 +41,7 @@ setInterval(() => {
 
 let waitingPlayers = [];
 const activeGames = {};
-const botGames = {}; // مدیریت بازی‌های ربات
+const botGames = {};
 
 io.on('connection', (socket) => {
     console.log('کاربر متصل شد:', socket.id);
@@ -105,7 +105,6 @@ io.on('connection', (socket) => {
         sendRecentGlobalChat(socket);
     });
 
-    // چت عمومی (منو)
     socket.on('send_global_chat', (message) => {
         const username = socket.data.username;
         if (!username || !db.users[username]) return;
@@ -119,23 +118,20 @@ io.on('connection', (socket) => {
         };
 
         globalChat.push(chatObj);
-        // نگهداری پیام‌های ۲ ساعت اخیر در حافظه موقت
         if (globalChat.length > 200) globalChat.shift();
 
         io.emit('receive_global_chat', chatObj);
     });
 
-    // شروع بازی با ربات
-    socket.on('start_bot_game', () => {
+    // شروع بازی با ربات با انتخاب سطح سختی
+    socket.on('start_bot_game', ({ difficulty }) => {
         const username = socket.data.username;
         if (!username || !db.users[username]) return;
 
         botGames[socket.id] = {
             board: Array(9).fill(null),
-            turn: 'player', // player یا bot
-            drawCount: 0,
-            playerWins: 0,
-            playerLosses: 0
+            turn: 'player',
+            difficulty: difficulty || 'medium' // easy, medium, hard
         };
 
         socket.emit('bot_game_start', {
@@ -144,12 +140,11 @@ io.on('connection', (socket) => {
         });
     });
 
-    // حرکت بازیکن در بازی با ربات
     socket.on('make_bot_move', ({ index }) => {
         const game = botGames[socket.id];
         if (!game || game.turn !== 'player' || game.board[index] !== null) return;
 
-        game.board[index] = 'X'; // بازیکن X است
+        game.board[index] = 'X';
 
         let winner = checkWin(game.board);
         if (winner || game.board.every(c => c !== null)) {
@@ -158,7 +153,6 @@ io.on('connection', (socket) => {
             game.turn = 'bot';
             socket.emit('bot_game_update', { board: game.board, turn: 'bot' });
             
-            // نوبت ربات با تاخیر کوتاه
             setTimeout(() => {
                 if (!botGames[socket.id]) return;
                 makeBotAIMove(socket, game);
@@ -166,18 +160,29 @@ io.on('connection', (socket) => {
         }
     });
 
-    // هوش مصنوعی ربات (متوسط: تلاش برای برد/جلوگیری از باخت و فرار از تساوی)
     function makeBotAIMove(socket, game) {
         const emptyCells = [];
         game.board.forEach((val, idx) => { if (val === null) emptyCells.push(idx); });
         if (emptyCells.length === 0) return;
 
-        // پیدا کردن بهترین حرکت (برنده شدن یا بلاک کردن بازیکن)
-        let chosenMove = findBestMove(game.board, 'O', 'X');
-        if (chosenMove === null) {
-            // انتخاب هوشمندانه ترجیحاً خانه وسط یا گوشه‌ها
-            const preferred = [4, 0, 2, 6, 8, 1, 3, 5, 7].filter(i => game.board[i] === null);
-            chosenMove = preferred.length > 0 ? preferred[0] : emptyCells[0];
+        let chosenMove = null;
+
+        if (game.difficulty === 'easy') {
+            // حرکت کاملاً تصادفی و ساده
+            chosenMove = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+        } else if (game.difficulty === 'medium') {
+            // سطح متوسط: بررسی برد/بلاک اولیه
+            chosenMove = findBestMove(game.board, 'O', 'X');
+            if (chosenMove === null) {
+                const preferred = [4, 0, 2, 6, 8, 1, 3, 5, 7].filter(i => game.board[i] === null);
+                chosenMove = preferred.length > 0 ? preferred[0] : emptyCells[0];
+            }
+        } else {
+            // سطح سخت: هوش مصنوعی کامل‌تر
+            chosenMove = findBestMove(game.board, 'O', 'X');
+            if (chosenMove === null) {
+                chosenMove = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+            }
         }
 
         game.board[chosenMove] = 'O';
@@ -192,7 +197,6 @@ io.on('connection', (socket) => {
     }
 
     function findBestMove(board, botSym, playerSym) {
-        // بررسی امکان برد ربات در حرکت بعدی
         for (let i = 0; i < 9; i++) {
             if (board[i] === null) {
                 board[i] = botSym;
@@ -203,7 +207,6 @@ io.on('connection', (socket) => {
                 board[i] = null;
             }
         }
-        // جلوگیری از برد بازیکن در حرکت بعدی
         for (let i = 0; i < 9; i++) {
             if (board[i] === null) {
                 board[i] = playerSym;
@@ -218,66 +221,24 @@ io.on('connection', (socket) => {
     }
 
     function handleBotGameOver(socket, game, winnerSymbol) {
-        const username = socket.data.username;
-        const user = db.users[username];
-        if (!user) return;
-
         let resultText = '';
-        let isDraw = false;
-
         if (winnerSymbol === 'X') {
-            game.playerWins++;
-            resultText = 'تبریک! شما ربات را بردید 🎉';
-            
-            // هر 4 برد -> 50 سکه
-            if (game.playerWins >= 4) {
-                user.coins += 50;
-                game.playerWins = 0;
-                resultText += ' (🎁 ۵۰ سکه پاداش ۴ برد متوالی دریافت کردید!)';
-            }
+            resultText = 'تبریک! شما ربات را بردید 🎉 (بدون تغییر کاپ/سکه)';
         } else if (winnerSymbol === 'O') {
-            game.playerLosses++;
-            resultText = 'ربات برنده شد! 🤖';
-
-            // هر ۳ باخت -> ۳۰ کاپ منفی
-            if (game.playerLosses >= 3) {
-                if (!user.isOwner) {
-                    user.trophies = Math.max(0, user.trophies - 30);
-                }
-                game.playerLosses = 0;
-                resultText += ' (⚠️ به دلیل ۳ باخت متوالی، ۳۰ کاپ منفی گرفتید!)';
-            }
+            resultText = 'ربات برنده شد! 🤖 (بدون تغییر کاپ/سکه)';
         } else {
-            isDraw = true;
-            game.drawCount++;
-            resultText = 'بازی مساوی شد!';
-
-            // اگر دو بازی مساوی شد کلا بیاد بیرون
-            if (game.drawCount >= 2) {
-                socket.emit('bot_game_over', {
-                    board: game.board,
-                    resultText: 'به دلیل ۲ بار تساوی متوالی، بازی با ربات خاتمه یافت.',
-                    forceExit: true
-                });
-                saveDB();
-                delete botGames[socket.id];
-                return;
-            }
+            resultText = 'بازی مساوی شد! (بدون تغییر کاپ/سکه)';
         }
 
-        saveDB();
         socket.emit('bot_game_over', {
             board: game.board,
-            resultText,
-            forceExit: false
+            resultText
         });
 
-        socket.emit('update_stats', getPublicUserData(user));
-        broadcastLeaderboard();
         delete botGames[socket.id];
     }
 
-    // بخش بازی آنلاین (همانند قبل با تایمر و پاداش)
+    // بخش آنلاین
     socket.on('find_game', () => {
         const username = socket.data.username;
         if (!username || !db.users[username]) return;
@@ -423,7 +384,7 @@ function startTurnTimer(roomId) {
 
             if (emptyCells.length > 0) {
                 const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-                io.to(roomId).emit('chat_system_alert', 'تایمر بازیکن تمام شد و یک خانه به صورت خودکار انتخاب شد! (اخطار اول)');
+                io.to(roomId).emit('chat_system_alert', 'تایمر بازیکن تمام شد و یک خانه به صورت خودکار انتخاب شد!');
                 processMove(roomId, currentTurnSocketId, randomCell);
             }
         }
@@ -523,7 +484,7 @@ function handleGameOverBySurrender(roomId, loserSocketId) {
 
     io.to(roomId).emit('game_over', {
         board: game.board,
-        winnerName: `${winnerUser.username} (به دلیل تسلیم حریف)`,
+        winnerName: `${winnerUser.username} (تسلیم حریف)`,
         isDraw: false
     });
 
@@ -555,7 +516,7 @@ function handleGameOverByTimeout(roomId, winnerSocketId, loserSocketId) {
 
     io.to(roomId).emit('game_over', {
         board: game.board,
-        winnerName: `${winnerUser.username} (به دلیل عدم پاسخگویی حریف)`,
+        winnerName: `${winnerUser.username} (عدم پاسخگویی)`,
         isDraw: false
     });
 
@@ -587,7 +548,7 @@ function handleGameOverByDisconnect(roomId, winnerSocketId) {
 
     io.to(winnerSocketId).emit('game_over', {
         board: game.board,
-        winnerName: `${winnerUser.username} (به دلیل قطع ارتباط حریف)`,
+        winnerName: `${winnerUser.username} (قطع ارتباط)`,
         isDraw: false
     });
 
