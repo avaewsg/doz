@@ -295,7 +295,6 @@
 <body>
 
 <div class="app-container">
-    <!-- ۱. صفحه ورود -->
     <div id="login-section" class="login-wrapper">
         <div class="auth-card">
             <h1>DOZX</h1>
@@ -307,7 +306,6 @@
         </div>
     </div>
 
-    <!-- ۲. داشبورد اصلی ریسپانسیو -->
     <div id="dashboard-section" class="dashboard-grid hidden">
         <div class="top-left-profile">
             <div class="user-welcome-box">
@@ -361,7 +359,6 @@
         </div>
     </div>
 
-    <!-- ۳. صفحه انتظار آنلاین -->
     <div id="waiting-section" class="login-wrapper hidden">
         <div class="auth-card" style="text-align: center;">
             <h2 style="font-family:'Lalezar'; font-size: 24px; color: #00f3ff; margin-bottom: 12px;">در حال جستجوی حریف...</h2>
@@ -370,7 +367,6 @@
         </div>
     </div>
 
-    <!-- ۴. صفحه بازی آنلاین -->
     <div id="game-section" class="game-layout hidden">
         <div id="scoreboard-header" style="background: rgba(12,12,24,0.8); border: 1px solid rgba(0,243,255,0.3); padding: 8px 20px; border-radius: 16px; font-family:'Lalezar'; font-size: 18px; margin-bottom: 10px; display: flex; gap: 15px; align-items: center;">
             <span id="match-score-text" style="color: #ffeb3b;">امتیاز: ۰ - ۰</span> | <span id="round-text" style="color: #00f3ff;">راند ۱ از ۳</span>
@@ -390,7 +386,6 @@
         <button class="btn btn-secondary" style="width: auto; padding: 8px 20px; background: #ff4757; color:#fff;" onclick="confirmSurrender()">خروج / پذیرش باخت</button>
     </div>
 
-    <!-- ۵. صفحه بازی با ربات -->
     <div id="bot-game-section" class="game-layout hidden">
         <h2 style="font-family:'Lalezar'; color: #2ed573; font-size: 22px; margin-bottom: 5px;">بازی با ربات هوشمند 🤖</h2>
         <div class="board" id="bot-game-board">
@@ -579,6 +574,7 @@
     function findGame() {
         document.getElementById('dashboard-section').classList.add('hidden');
         document.getElementById('waiting-section').classList.remove('hidden');
+        renderBoard(Array(9).fill(null)); // پاک کردن تخته به محض ورود به صف جستجو
         socket.emit('find_game');
     }
     
@@ -666,10 +662,11 @@
     function renderBoard(board) {
         const cells = document.querySelectorAll('#game-board .cell');
         for (let i = 0; i < 9; i++) {
-            cells[i].innerText = board[i] || '';
+            const val = (board && board[i]) ? board[i] : '';
+            cells[i].innerText = val;
             cells[i].className = 'cell';
-            if (board[i] === 'X') cells[i].classList.add('x');
-            if (board[i] === 'O') cells[i].classList.add('o');
+            if (val === 'X') cells[i].classList.add('x');
+            if (val === 'O') cells[i].classList.add('o');
         }
     }
 </script>
