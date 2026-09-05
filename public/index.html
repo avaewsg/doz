@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نئون دوز آنلاین | Cyber Tic-Tac-Toe</title>
+    <title>DozX | دوزایکس آنلاین</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@400;700;900&display=swap');
 
         * { box-sizing: border-box; }
 
         body {
-            background: #090a0f;
+            background: #05050a;
             background-image: 
-                radial-gradient(circle at 10% 20%, rgba(112, 0, 255, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(0, 243, 255, 0.15) 0%, transparent 40%);
+                radial-gradient(circle at 15% 15%, rgba(0, 243, 255, 0.12) 0%, transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(176, 0, 255, 0.12) 0%, transparent 45%);
             color: #fff;
             font-family: 'Vazirmatn', sans-serif;
             display: flex;
@@ -30,173 +30,183 @@
             padding: 15px;
         }
 
-        /* کارت‌های شیشه‌ای و نئونی */
+        /* کارت‌های شیشه‌ای فوق‌العاده پیشرفته */
         .card {
-            background: rgba(18, 18, 30, 0.75);
-            border: 1px solid rgba(0, 243, 255, 0.2);
-            border-radius: 24px;
-            padding: 30px 20px;
-            backdrop-filter: blur(16px);
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(0, 243, 255, 0.05);
+            background: rgba(13, 13, 25, 0.85);
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            border-radius: 28px;
+            padding: 35px 22px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(0, 243, 255, 0.05);
             text-align: center;
             position: relative;
-            animation: fadeIn 0.4s ease-out;
+            animation: cardAppear 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes cardAppear {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
         h2 {
             font-family: 'Lalezar', cursive;
-            font-size: 32px;
-            letter-spacing: 1px;
-            background: linear-gradient(45deg, #00f3ff, #b000ff);
+            font-size: 38px;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #00f3ff, #b000ff, #ff007f);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
+            text-shadow: 0 0 30px rgba(0, 243, 255, 0.3);
         }
 
-        p { color: #a5b4fc; font-size: 14px; margin-bottom: 20px; }
+        p { color: #94a3b8; font-size: 14px; margin-bottom: 25px; }
 
-        /* استایل اینپوت خفن */
+        /* باکس ورودی نئونی */
         .input-box {
             position: relative;
-            margin-bottom: 20px;
+            margin-bottom: 22px;
         }
 
         input {
             width: 100%;
-            padding: 15px 20px;
-            border-radius: 14px;
-            border: 2px solid rgba(0, 243, 255, 0.3);
-            background: rgba(10, 10, 20, 0.6);
+            padding: 16px 20px;
+            border-radius: 16px;
+            border: 2px solid rgba(0, 243, 255, 0.4);
+            background: rgba(8, 8, 16, 0.8);
             color: #fff;
             font-size: 18px;
             font-family: 'Vazirmatn', sans-serif;
             text-align: center;
             outline: none;
             transition: all 0.3s;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+            box-shadow: inset 0 3px 8px rgba(0,0,0,0.6);
         }
 
         input:focus {
             border-color: #00f3ff;
-            box-shadow: 0 0 15px rgba(0, 243, 255, 0.4), inset 0 2px 5px rgba(0,0,0,0.5);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.5), inset 0 3px 8px rgba(0,0,0,0.6);
         }
 
-        /* دکمه‌های نئونی جذاب */
+        /* دکمه‌های اکشن فوق‌العاده */
         .neon-btn {
             width: 100%;
             background: linear-gradient(135deg, #00f3ff, #7000ff);
             border: none;
             color: #fff;
             padding: 16px;
-            font-size: 18px;
+            font-size: 20px;
             font-family: 'Lalezar', cursive;
-            letter-spacing: 1px;
-            border-radius: 14px;
+            letter-spacing: 1.5px;
+            border-radius: 16px;
             cursor: pointer;
-            box-shadow: 0 5px 20px rgba(112, 0, 255, 0.4);
-            transition: all 0.2s ease;
+            box-shadow: 0 6px 25px rgba(112, 0, 255, 0.5);
+            transition: all 0.25s ease;
         }
 
         .neon-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 243, 255, 0.6);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 243, 255, 0.7);
         }
 
         .neon-btn:active { transform: scale(0.97); }
 
         .danger-btn {
-            background: linear-gradient(135deg, #ff4757, #ff6b81);
-            box-shadow: 0 5px 20px rgba(255, 71, 87, 0.4);
+            background: linear-gradient(135deg, #ff4757, #ff1e56);
+            box-shadow: 0 6px 25px rgba(255, 71, 87, 0.5);
         }
-        .danger-btn:hover { box-shadow: 0 8px 25px rgba(255, 71, 87, 0.6); }
+        .danger-btn:hover { box-shadow: 0 10px 30px rgba(255, 71, 87, 0.7); }
 
-        /* پنل پروفایل و آمار */
+        /* پنل پروفایل و مدال‌های آمار با استیکر کاپ سفارشی */
         .stats-row {
             display: flex;
             justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 12px;
+            margin-bottom: 22px;
         }
 
         .stat-badge {
             flex: 1;
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 10px;
-            border-radius: 12px;
+            padding: 12px;
+            border-radius: 14px;
             font-weight: 700;
-            font-size: 15px;
+            font-size: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
         }
 
-        /* تخته بازی نئونی فوق‌العاده */
+        /* استایل استیکر کاپ سفارشی (دقیقاً هم‌اندازه متن و با کیفیت برداری) */
+        .sticker-icon {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.6));
+        }
+
+        /* تخته بازی سایبرپانک DozX */
         .board {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
+            gap: 14px;
             margin: 25px 0;
         }
 
         .cell {
-            background: rgba(15, 15, 25, 0.8);
-            border: 2px solid rgba(0, 243, 255, 0.25);
-            border-radius: 16px;
-            height: 95px;
-            font-size: 50px;
+            background: rgba(10, 10, 20, 0.9);
+            border: 2px solid rgba(0, 243, 255, 0.3);
+            border-radius: 18px;
+            height: 100px;
+            font-size: 55px;
             font-family: 'Lalezar', cursive;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.7);
         }
 
         .cell:hover {
             border-color: #00f3ff;
-            background: rgba(0, 243, 255, 0.07);
-            transform: scale(1.04);
-            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+            background: rgba(0, 243, 255, 0.08);
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.4), inset 0 0 15px rgba(0,0,0,0.5);
         }
 
-        /* رنگ‌بندی حرکت‌ها با انیمیشن ظهور */
         .cell.x {
             color: #00f3ff;
-            text-shadow: 0 0 15px rgba(0, 243, 255, 0.8);
+            text-shadow: 0 0 20px rgba(0, 243, 255, 0.9);
             animation: popIn 0.3s ease;
         }
 
         .cell.o {
-            color: #ff4757;
-            text-shadow: 0 0 15px rgba(255, 71, 87, 0.8);
+            color: #ff007f;
+            text-shadow: 0 0 20px rgba(255, 0, 127, 0.9);
             animation: popIn 0.3s ease;
         }
 
         @keyframes popIn {
             0% { transform: scale(0); opacity: 0; }
-            80% { transform: scale(1.1); }
+            70% { transform: scale(1.15); }
             100% { transform: scale(1); opacity: 1; }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .hidden { display: none !important; }
 
-        /* لودر جستجوی حریف */
+        /* لودر انتظار جذاب */
         .loader {
-            width: 50px;
-            height: 50px;
+            width: 55px;
+            height: 55px;
             border: 4px solid rgba(0, 243, 255, 0.1);
             border-top: 4px solid #00f3ff;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
+            animation: spin 0.9s linear infinite;
+            margin: 25px auto;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
         }
 
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -207,22 +217,26 @@
 <div class="container">
     <!-- ۱. صفحه ثبت‌نام و ورود -->
     <div id="login-section" class="card">
-        <h2>ورود به نئون دوز</h2>
-        <p>نام کاربری خود را وارد کنید تا همیشه ذخیره بماند:</p>
+        <h2>DozX</h2>
+        <p>نام کاربری خود را وارد کنید تا ذخیره شود:</p>
         <div class="input-box">
             <input type="text" id="username-input" placeholder="مثلا: کیا_گیمر">
         </div>
-        <button class="neon-btn" onclick="login()">ورود به میدان مبارزه ⚡</button>
+        <button class="neon-btn" onclick="login()">ورود به DozX ⚡</button>
     </div>
 
     <!-- ۲. منوی اصلی و پروفایل بازیکن -->
     <div id="menu-section" class="card hidden">
-        <h3 id="welcome-user" style="font-size: 22px; color: #00f3ff; margin-bottom: 15px;">سلام، کاربر</h3>
+        <h3 id="welcome-user" style="font-size: 24px; font-family: 'Lalezar', cursive; color: #00f3ff; margin-bottom: 15px; letter-spacing: 1px;">سلام</h3>
         <div class="stats-row">
-            <div class="stat-badge">🪙 <span id="coins-val">40</span></div>
-            <div class="stat-badge">🏆 <span id="trophies-val">0</span></div>
+            <div class="stat-badge">🪙 سکه: <span id="coins-val">40</span></div>
+            <div class="stat-badge">
+                <!-- استیکر کاپ سفارشی و خفن -->
+                <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffd700'><path d='M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.4 4.94C8.63 13.53 10.34 15 12 15s3.37-1.47 4.6-4.06C19.08 10.63 21 8.55 21 6V5c0-1.1-.9-2-2-2m-2 2v1.08C16.32 9.4 15.34 10 12 10s-4.32-.6-5-1.92V7h10M5 7h2v1.5c0 .34.05.67.14 1C6.26 9.3 5 8.24 5 7m14 0c0 1.24-1.26 2.3-2.14 2.5.09-.33.14-.66.14-1V7h2m-7 10c-2.67 0-8 1.34-8 4v1h16v-1c0-2.66-5.33-4-8-4z'/></svg>" class="sticker-icon" alt="Trophy">
+                کاپ: <span id="trophies-val">0</span>
+            </div>
         </div>
-        <p style="background: rgba(0,243,255,0.05); border: 1px dashed rgba(0,243,255,0.2); padding: 10px; border-radius: 12px; margin-bottom: 20px;">
+        <p style="background: rgba(0,243,255,0.04); border: 1px dashed rgba(0,243,255,0.25); padding: 12px; border-radius: 14px; margin-bottom: 25px; color: #a5b4fc;">
             ورودی: ۱۰ سکه | جایزه برنده: ۸۰ سکه + ۴۰ کاپ
         </p>
         <button class="neon-btn" onclick="findGame()">شروع بازی آنلاین 🎮</button>
@@ -232,15 +246,15 @@
     <div id="waiting-section" class="card hidden">
         <h2>در حال جستجوی حریف...</h2>
         <div class="loader"></div>
-        <p>منتظر بمانید تا بازیکن دیگری وارد شود</p>
+        <p>منتظر بمانید تا بازیکن دیگری به DozX ملحق شود</p>
         <button class="neon-btn danger-btn" onclick="cancelSearch()">لغو جستجو</button>
     </div>
 
-    <!-- ۴. صفحه اصلی بازی نئونی -->
+    <!-- ۴. صفحه اصلی بازی DozX -->
     <div id="game-section" class="card hidden">
-        <div class="stats-row" style="margin-bottom: 10px; font-size: 14px;">
+        <div class="stats-row" style="margin-bottom: 12px; font-size: 14px;">
             <div class="stat-badge" style="color: #00f3ff;" id="p1-name">شما</div>
-            <div class="stat-badge" style="color: #ff4757;" id="p2-name">حریف</div>
+            <div class="stat-badge" style="color: #ff007f;" id="p2-name">حریف</div>
         </div>
         
         <div class="board" id="game-board">
@@ -255,7 +269,7 @@
             <div class="cell" onclick="makeMove(8)"></div>
         </div>
 
-        <div id="turn-indicator" style="font-family: 'Lalezar', cursive; font-size: 20px; color: #ffeb3b; letter-spacing: 0.5px;">نوبت شماست!</div>
+        <div id="turn-indicator" style="font-family: 'Lalezar', cursive; font-size: 22px; color: #ffeb3b; letter-spacing: 1px;">نوبت شماست!</div>
     </div>
 </div>
 
@@ -267,7 +281,7 @@
 
     // بارگذاری خودکار نام ذخیره شده
     window.onload = () => {
-        const savedName = localStorage.getItem('neon_tictactoe_username');
+        const savedName = localStorage.getItem('dozx_username');
         if (savedName) {
             document.getElementById('username-input').value = savedName;
         }
@@ -276,14 +290,14 @@
     function login() {
         const username = document.getElementById('username-input').value.trim();
         if (!username) return alert('لطفاً یک نام کاربری وارد کنید');
-        localStorage.setItem('neon_tictactoe_username', username);
+        localStorage.setItem('dozx_username', username);
         socket.emit('login', username);
     }
 
     socket.on('init_data', (user) => {
         document.getElementById('login-section').classList.add('hidden');
         document.getElementById('menu-section').classList.remove('hidden');
-        document.getElementById('welcome-user').innerText = `سلام، ${user.username} 🔥`;
+        document.getElementById('welcome-user').innerText = `خوش آمدی، ${user.username} 🔥`;
         updateStatsUI(user);
     });
 
@@ -325,7 +339,6 @@
         const opponentId = playerIds.find(id => id !== socket.id);
         document.getElementById('p2-name').innerText = data.players[opponentId];
         
-        // ریست کردن تخته
         const cells = document.getElementsByClassName('cell');
         for (let c of cells) {
             c.innerText = '';
@@ -351,7 +364,7 @@
         renderBoard(data.board);
         setTimeout(() => {
             if (data.isDraw) {
-                alert('🤝 بازی مساوی شد!');
+                alert('🤝 بازی در DozX مساوی شد!');
             } else {
                 alert(`🏆 برنده این دور: ${data.winnerName}`);
             }
