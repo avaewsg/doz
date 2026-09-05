@@ -47,10 +47,10 @@ io.on('connection', (socket) => {
     console.log('کاربر متصل شد:', socket.id);
 
     socket.on('register', ({ username, password }) => {
-        username = username.trim();
         if (!username || !password) {
             return socket.emit('error_msg', 'لطفاً نام کاربری و رمز عبور را وارد کنید');
         }
+        username = username.trim();
 
         if (db.users[username]) {
             return socket.emit('error_msg', 'این نام کاربری قبلاً ثبت شده است! لطفاً وارد شوید.');
@@ -78,10 +78,10 @@ io.on('connection', (socket) => {
     });
 
     socket.on('login', ({ username, password }) => {
-        username = username.trim();
         if (!username || !password) {
             return socket.emit('error_msg', 'لطفاً نام کاربری و رمز عبور را وارد کنید');
         }
+        username = username.trim();
 
         if (!db.users[username]) {
             return socket.emit('error_msg', 'این نام کاربری وجود ندارد! ابتدا ثبت‌نام کنید.');
@@ -123,7 +123,6 @@ io.on('connection', (socket) => {
         io.emit('receive_global_chat', chatObj);
     });
 
-    // شروع بازی با ربات با انتخاب سطح سختی
     socket.on('start_bot_game', ({ difficulty }) => {
         const username = socket.data.username;
         if (!username || !db.users[username]) return;
@@ -235,7 +234,6 @@ io.on('connection', (socket) => {
         delete botGames[socket.id];
     }
 
-    // بخش آنلاین
     socket.on('find_game', () => {
         const username = socket.data.username;
         if (!username || !db.users[username]) return;
@@ -263,21 +261,12 @@ io.on('connection', (socket) => {
                 if (opponentUsername && db.users[opponentUsername]) {
                     const roomId = `room_${Date.now()}`;
                     
-                    // تعیین تصادفی شروع‌کننده (X) و نفر دوم (O)
-                    const isFirstP1 = Math.random() < 0.5;
-                    const p1Id = isFirstP1 ? socket.id : opponentSocketId;
-                    const p2Id = isFirstP1 ? opponentSocketId : socket.id;
-                    const u1 = isFirstP1 ? username : opponentUsername;
-                    const u2 = isFirstP1 ? opponentUsername : username;
-
                     activeGames[roomId] = {
-                        players: [p1Id, p2Id],
-                        usernames: [u1, u2],
-                        symbols: { [p1Id]: 'X', [p2Id]: 'O' },
-                        scores: { [p1Id]: 0, [p2Id]: 0 },
+                        players: [socket.id, opponentSocketId],
+                        usernames: [username, opponentUsername],
                         board: Array(9).fill(null),
-                        turn: p1Id,
-                        timeouts: { [p1Id]: 0, [p2Id]: 0 },
+                        turn: socket.id,
+                        timeouts: { [socket.id]: 0, [opponentSocketId]: 0 },
                         timer: null
                     };
 
@@ -286,10 +275,8 @@ io.on('connection', (socket) => {
 
                     io.to(roomId).emit('game_start', {
                         roomId,
-                        players: { [p1Id]: u1, [p2Id]: u2 },
-                        symbols: { [p1Id]: 'X', [p2Id]: 'O' },
-                        scores: { [p1Id]: 0, [p2Id]: 0 },
-                        turn: p1Id,
+                        players: { [socket.id]: username, [opponentSocketId]: opponentUsername },
+                        turn: socket.id,
                         timeLeft: 30
                     });
 
@@ -381,57 +368,49 @@ function startTurnTimer(roomId) {
 
     game.timer = setTimeout(() => {
         const currentTurnSocketId = game.turn;
-        const emptyCells = [];
-        game.board.forEach((val, idx) => { if (val === null) emptyCells.push(idx); });
+        game.timeouts[currentTurnSocketId] = (game.timeouts[currentTurnSocketId] || 0) + 1;
 
-        if (emptyCells.length > 0) {
-            // انتخاب رندوم یک خانه خالی به صورت خودکار پس از اتمام 30 ثانیه
-            const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-            io.to(roomId).emit('chat_system_alert', 'تایمر ۳۰ ثانیه تمام شد و حرکت به صورت خودکار انجام شد!');
-            processMove(roomId, currentTurnSocketId, randomCell, true);
+        if (game.timeouts[currentTurnSocketId] >= 2) {
+            const winnerSocketId = game.players.find(id => id !== currentTurnSocketId);
+            handleGameOverByTimeout(roomId, winnerSocketId, currentTurnSocketId);
+        } else {
+            const emptyCells = [];
+            game.board.forEach((val, idx) => { if (val === null) emptyCells.push(idx); });
+
+            if (emptyCells.length > 0) {
+                const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                io.to(roomId).emit('chat_system_alert', 'تایمر بازیکن تمام شد و یک خانه به صورت خودکار انتخاب شد!');
+                processMove(roomId, currentTurnSocketId, randomCell);
+            }
         }
     }, 30000);
 }
 
-function processMove(roomId, socketId, index, isAuto = false) {
+function processMove(roomId, socketId, index) {
     const game = activeGames[roomId];
     if (!game || game.turn !== socketId) return;
     if (game.board[index] !== null) return;
     if (game.timer) clearTimeout(game.timer);
 
-    const symbol = game.symbols[socketId];
+    const symbol = game.players[0] === socketId ? 'X' : 'O';
     game.board[index] = symbol;
 
     const winnerSymbol = checkWin(game.board);
     
     if (winnerSymbol || game.board.every(cell => cell !== null)) {
-        let roundWinnerSocket = null;
+        let finalWinnerSocket = null;
+        const p1Socket = game.players[0];
+        const p2Socket = game.players[1];
+        const u1 = game.usernames[0];
+        const u2 = game.usernames[1];
+
         if (winnerSymbol) {
-            roundWinnerSocket = Object.keys(game.symbols).find(id => game.symbols[id] === winnerSymbol);
+            finalWinnerSocket = (winnerSymbol === 'X') ? p1Socket : p2Socket;
         }
 
-        if (roundWinnerSocket) {
-            game.scores[roundWinnerSocket] = (game.scores[roundWinnerSocket] || 0) + 1;
-        }
-
-        // بررسی اینکه آیا کسی به 3 برد رسیده است یا خیر
-        let matchWinnerSocket = null;
-        for (let pId of game.players) {
-            if (game.scores[pId] >= 3) {
-                matchWinnerSocket = pId;
-                break;
-            }
-        }
-
-        if (matchWinnerSocket) {
-            // پایان کل مسابقه (کسی به 3 برد رسید)
-            const p1Socket = game.players[0];
-            const p2Socket = game.players[1];
-            const u1 = game.usernames[0];
-            const u2 = game.usernames[1];
-
-            const loserSocket = matchWinnerSocket === p1Socket ? p2Socket : p1Socket;
-            const winnerUser = db.users[matchWinnerSocket === p1Socket ? u1 : u2];
+        if (finalWinnerSocket) {
+            const loserSocket = finalWinnerSocket === p1Socket ? p2Socket : p1Socket;
+            const winnerUser = db.users[finalWinnerSocket === p1Socket ? u1 : u2];
             const loserUser = db.users[loserSocket === p1Socket ? u1 : u2];
             
             winnerUser.coins += 80;
@@ -441,10 +420,10 @@ function processMove(roomId, socketId, index, isAuto = false) {
             }
             saveDB();
 
-            io.to(roomId).emit('match_over', {
+            io.to(roomId).emit('game_over', {
                 board: game.board,
-                scores: game.scores,
-                winnerName: winnerUser.username
+                winnerName: winnerUser.username,
+                isDraw: false
             });
 
             io.to(p1Socket).emit('update_stats', getPublicUserData(db.users[u1]));
@@ -452,26 +431,23 @@ function processMove(roomId, socketId, index, isAuto = false) {
             broadcastLeaderboard();
             delete activeGames[roomId];
         } else {
-            // ریست کردن تخته برای دست بعدی (مسابقه هنوز 3 برد نشده)
-            io.to(roomId).emit('round_over', {
+            const user1 = db.users[u1];
+            const user2 = db.users[u2];
+
+            if (!user1.isOwner) user1.coins += 10;
+            if (!user2.isOwner) user2.coins += 10;
+            saveDB();
+
+            io.to(roomId).emit('game_over', {
                 board: game.board,
-                scores: game.scores,
-                roundWinner: roundWinnerSocket ? game.usernames[game.players.indexOf(roundWinnerSocket)] : 'مساوی'
+                winnerName: 'مساوی (برگشت سکه‌ها)!',
+                isDraw: true
             });
 
-            setTimeout(() => {
-                if (!activeGames[roomId]) return;
-                game.board = Array(9).fill(null);
-                // تغییر نوبت شروع دست بعدی به بازیکن دیگر
-                game.turn = game.players.find(id => id !== game.turn);
-                io.to(roomId).emit('next_round', {
-                    board: game.board,
-                    turn: game.turn,
-                    scores: game.scores,
-                    timeLeft: 30
-                });
-                startTurnTimer(roomId);
-            }, 2500);
+            io.to(p1Socket).emit('update_stats', getPublicUserData(user1));
+            io.to(p2Socket).emit('update_stats', getPublicUserData(user2));
+            broadcastLeaderboard();
+            delete activeGames[roomId];
         }
     } else {
         game.turn = game.players.find(id => id !== socketId);
@@ -501,10 +477,42 @@ function handleGameOverBySurrender(roomId, loserSocketId) {
     }
     saveDB();
 
-    io.to(roomId).emit('match_over', {
+    io.to(roomId).emit('game_over', {
         board: game.board,
-        scores: game.scores,
-        winnerName: `${winnerUser.username} (تسلیم حریف)`
+        winnerName: `${winnerUser.username} (تسلیم حریف)`,
+        isDraw: false
+    });
+
+    io.to(p1Socket).emit('update_stats', getPublicUserData(db.users[u1]));
+    io.to(p2Socket).emit('update_stats', getPublicUserData(db.users[u2]));
+    broadcastLeaderboard();
+    delete activeGames[roomId];
+}
+
+function handleGameOverByTimeout(roomId, winnerSocketId, loserSocketId) {
+    const game = activeGames[roomId];
+    if (!game) return;
+    if (game.timer) clearTimeout(game.timer);
+
+    const p1Socket = game.players[0];
+    const p2Socket = game.players[1];
+    const u1 = game.usernames[0];
+    const u2 = game.usernames[1];
+
+    const winnerUser = db.users[winnerSocketId === p1Socket ? u1 : u2];
+    const loserUser = db.users[loserSocketId === p1Socket ? u1 : u2];
+
+    winnerUser.coins += 80;
+    winnerUser.trophies += 40;
+    if (!loserUser.isOwner) {
+        loserUser.trophies = Math.max(0, loserUser.trophies - 10);
+    }
+    saveDB();
+
+    io.to(roomId).emit('game_over', {
+        board: game.board,
+        winnerName: `${winnerUser.username} (عدم پاسخگویی)`,
+        isDraw: false
     });
 
     io.to(p1Socket).emit('update_stats', getPublicUserData(db.users[u1]));
@@ -533,10 +541,10 @@ function handleGameOverByDisconnect(roomId, winnerSocketId) {
     }
     saveDB();
 
-    io.to(winnerSocketId).emit('match_over', {
+    io.to(winnerSocketId).emit('game_over', {
         board: game.board,
-        scores: game.scores,
-        winnerName: `${winnerUser.username} (قطع ارتباط)`
+        winnerName: `${winnerUser.username} (قطع ارتباط)`,
+        isDraw: false
     });
 
     io.to(winnerSocketId).emit('update_stats', getPublicUserData(winnerUser));
