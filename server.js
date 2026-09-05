@@ -38,7 +38,6 @@ const activeGames = {};
 io.on('connection', (socket) => {
     console.log('کاربر متصل شد:', socket.id);
 
-    // ثبت‌نام کاربر جدید
     socket.on('register', ({ username, password }) => {
         username = username.trim();
         if (!username || !password) {
@@ -49,7 +48,6 @@ io.on('connection', (socket) => {
             return socket.emit('error_msg', 'این نام کاربری قبلاً ثبت شده است! لطفاً وارد شوید.');
         }
 
-        // بررسی نام مالک
         if (username === 'Kiarash' && password !== 'kia12') {
             return socket.emit('error_msg', 'رمز عبور اکانت رسمی مالک اشتباه است!');
         }
@@ -70,7 +68,6 @@ io.on('connection', (socket) => {
         broadcastUserList();
     });
 
-    // ورود به اکانت موجود
     socket.on('login', ({ username, password }) => {
         username = username.trim();
         if (!username || !password) {
@@ -167,6 +164,42 @@ io.on('connection', (socket) => {
         }
     });
 
+    // خروج و تسلیم در حین بازی
+    socket.on('surrender_game', ({ roomId }) => {
+        const game = activeGames[roomId];
+        if (!game) return;
+
+        const p1Socket = game.players[0];
+        const p2Socket = game.players[1];
+        const u1 = game.usernames[0];
+        const u2 = game.usernames[1];
+
+        const loserSocket = socket.id;
+        const winnerSocket = (loserSocket === p1Socket) ? p2Socket : p1Socket;
+
+        const winnerUser = db.users[winnerSocket === p1Socket ? u1 : u2];
+        const loserUser = db.users[loserSocket === p1Socket ? u1 : u2];
+
+        // اعمال جوایز و جریمه‌ها
+        winnerUser.coins += 80;
+        winnerUser.trophies += 40;
+        if (!loserUser.isOwner) {
+            loserUser.trophies = Math.max(0, loserUser.trophies - 10);
+        }
+        saveDB();
+
+        io.to(roomId).emit('game_over', {
+            board: game.board,
+            winnerName: `${winnerUser.username} (به دلیل تسلیم حریف)`,
+            isDraw: false
+        });
+
+        io.to(p1Socket).emit('update_stats', getPublicUserData(db.users[u1]));
+        io.to(p2Socket).emit('update_stats', getPublicUserData(db.users[u2]));
+        broadcastLeaderboard();
+        delete activeGames[roomId];
+    });
+
     socket.on('make_move', ({ roomId, index }) => {
         const game = activeGames[roomId];
         if (!game || game.turn !== socket.id) return;
@@ -211,7 +244,6 @@ io.on('connection', (socket) => {
                 broadcastLeaderboard();
                 delete activeGames[roomId];
             } else {
-                // مساوی شدن: برگشت سکه‌ها و بدون تغییر کاپ
                 const user1 = db.users[u1];
                 const user2 = db.users[u2];
 
@@ -238,8 +270,9 @@ io.on('connection', (socket) => {
 
     socket.on('send_chat', ({ roomId, message }) => {
         const username = socket.data.username;
-        if (!username) return;
-        io.to(roomId).emit('receive_chat', { username, message });
+        if (!username || !db.users[username]) return;
+        const isOwner = db.users[username].isOwner;
+        io.to(roomId).emit('receive_chat', { username, message, isOwner });
     });
 
     socket.on('admin_set_coins', ({ targetUsername, newCoins }) => {
@@ -304,7 +337,8 @@ function broadcastUserList() {
     const allUsers = Object.values(db.users).map(u => ({
         username: u.username,
         coins: u.coins,
-        isOwner: u.isOwner
+        isOwner: u.isOwner,
+        trophies: u.trophies
     }));
     io.emit('update_user_list', allUsers);
 }
