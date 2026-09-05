@@ -34,7 +34,6 @@
             justify-content: center;
         }
 
-        /* صفحه ورود */
         .login-wrapper {
             display: flex;
             justify-content: center;
@@ -117,7 +116,6 @@
             color: #cbd5e1;
         }
 
-        /* داشبورد ریسپانسیو */
         .dashboard-grid {
             display: grid;
             grid-template-columns: 300px 1fr 320px;
@@ -300,6 +298,7 @@
 <body>
 
 <div class="app-container">
+    <!-- ۱. صفحه ورود -->
     <div id="login-section" class="login-wrapper">
         <div class="auth-card">
             <h1>DOZX</h1>
@@ -311,6 +310,7 @@
         </div>
     </div>
 
+    <!-- ۲. داشبورد اصلی ریسپانسیو -->
     <div id="dashboard-section" class="dashboard-grid hidden">
         <div class="top-left-profile">
             <div class="user-welcome-box">
@@ -348,7 +348,7 @@
 
         <div class="right-sidebar">
             <div class="dash-card" style="gap: 10px;">
-                <div class="dash-title">⚔️ بخش آنلاین</div>
+                <div class="dash-title">⚔️ بخش آنلاین (مسابقه ۳ دسته)</div>
                 <p style="font-size: 11px; color: #94a3b8;">ورودی: ۱۰ سکه | جایزه: ۸۰ سکه</p>
                 <button class="btn btn-primary" style="margin:0;" onclick="findGame()">شروع نبرد آنلاین</button>
             </div>
@@ -364,6 +364,7 @@
         </div>
     </div>
 
+    <!-- ۳. صفحه انتظار آنلاین -->
     <div id="waiting-section" class="login-wrapper hidden">
         <div class="auth-card" style="text-align: center;">
             <h2 style="font-family:'Lalezar'; font-size: 24px; color: #00f3ff; margin-bottom: 12px;">در حال جستجوی حریف...</h2>
@@ -372,19 +373,30 @@
         </div>
     </div>
 
+    <!-- ۴. صفحه بازی آنلاین با قابلیت اسکوربورد ۳ دست و نوبت دقیق -->
     <div id="game-section" class="game-layout hidden">
-        <div style="display: flex; gap: 20px; font-family:'Lalezar'; font-size: 16px; margin-bottom: 5px;">
-            <span style="color: #00f3ff;" id="p1-name">شما</span> VS <span style="color: #ff007f;" id="p2-name">حریف</span>
+        <!-- نمایش امتیاز چند چند و راند جاری -->
+        <div id="scoreboard-header" style="background: rgba(12,12,24,0.8); border: 1px solid rgba(0,243,255,0.3); padding: 8px 20px; border-radius: 16px; font-family:'Lalezar'; font-size: 18px; margin-bottom: 10px; display: flex; gap: 15px; align-items: center;">
+            <span id="match-score-text" style="color: #ffeb3b;">امتیاز: ۰ - ۰</span> | <span id="round-text" style="color: #00f3ff;">راند ۱ از ۳</span>
         </div>
+
+        <!-- نمایش اسامی به همراه علامت ضربدر (X) و دایره (O) -->
+        <div style="display: flex; gap: 20px; font-family:'Lalezar'; font-size: 18px; margin-bottom: 10px;">
+            <span style="color: #00f3ff;" id="p1-name">شما (X)</span> VS <span style="color: #ff007f;" id="p2-name">حریف (O)</span>
+        </div>
+
         <div class="board" id="game-board">
             <div class="cell" onclick="makeMove(0)"></div><div class="cell" onclick="makeMove(1)"></div><div class="cell" onclick="makeMove(2)"></div>
             <div class="cell" onclick="makeMove(3)"></div><div class="cell" onclick="makeMove(4)"></div><div class="cell" onclick="makeMove(5)"></div>
             <div class="cell" onclick="makeMove(6)"></div><div class="cell" onclick="makeMove(7)"></div><div class="cell" onclick="makeMove(8)"></div>
         </div>
-        <div id="turn-indicator" style="font-family: 'Lalezar'; font-size: 18px; color: #ffeb3b; margin-bottom: 10px;">نوبت شماست!</div>
+
+        <!-- نمایش حرفه‌ای نوبت با نام بازیکن -->
+        <div id="turn-indicator" style="font-family: 'Lalezar'; font-size: 20px; color: #ffeb3b; margin-bottom: 12px; text-shadow: 0 0 10px rgba(255,235,59,0.4);">نوبت: </div>
         <button class="btn btn-secondary" style="width: auto; padding: 8px 20px; background: #ff4757; color:#fff;" onclick="confirmSurrender()">خروج / پذیرش باخت</button>
     </div>
 
+    <!-- ۵. صفحه بازی با ربات -->
     <div id="bot-game-section" class="game-layout hidden">
         <h2 style="font-family:'Lalezar'; color: #2ed573; font-size: 22px; margin-bottom: 5px;">بازی با ربات هوشمند 🤖</h2>
         <div class="board" id="bot-game-board">
@@ -397,6 +409,7 @@
     </div>
 </div>
 
+<!-- مودال خوش‌آمدگویی -->
 <div id="welcome-modal" class="modal hidden">
     <div class="modal-content">
         <h3 style="font-family: 'Lalezar', cursive; color: #00f3ff; margin-bottom: 10px; font-size: 22px;">🎮 به DOZX خوش آمدید!</h3>
@@ -417,6 +430,7 @@
 <script>
     const socket = io();
     let currentRoomId = null;
+    let matchPlayersInfo = {};
 
     function registerUser() {
         const username = document.getElementById('username-input').value;
@@ -582,27 +596,67 @@
         document.getElementById('dashboard-section').classList.remove('hidden');
     });
 
+    // شروع بازی آنلاین و تنظیم اسامی همراه با علامت X و O
     socket.on('game_start', (d) => {
         currentRoomId = d.roomId;
+        matchPlayersInfo = d.players;
         document.getElementById('waiting-section').classList.add('hidden');
         document.getElementById('game-section').classList.remove('hidden');
-        document.getElementById('p1-name').innerText = d.players[socket.id];
-        const oppId = Object.keys(d.players).find(id => id !== socket.id);
-        document.getElementById('p2-name').innerText = d.players[oppId];
-        renderBoard(Array(9).fill(null));
+        
+        const p1Id = Object.keys(d.players)[0];
+        const p2Id = Object.keys(d.players)[1];
+        
+        document.getElementById('p1-name').innerText = `${d.players[p1Id]} (X)`;
+        document.getElementById('p2-name').innerText = `${d.players[p2Id]} (O)`;
+        
+        updateGameUIState(d.board, d.turnName, d.scores, 1);
     });
 
-    function makeMove(i) { socket.emit('make_move', { roomId: currentRoomId, index: i }); }
-    socket.on('update_board', (d) => renderBoard(d.board));
-    socket.on('game_over', (d) => {
+    socket.on('update_board', (d) => {
+        updateGameUIState(d.board, d.turnName, d.scores);
+    });
+
+    socket.on('round_over', (d) => {
+        updateGameUIState(d.board, null, d.scores);
+        document.getElementById('turn-indicator').innerText = `نتیجه راند: ${d.roundWinner} - آماده‌سازی راند بعدی...`;
+    });
+
+    socket.on('next_round', (d) => {
+        updateGameUIState(d.board, d.turnName, d.scores, d.round);
+    });
+
+    socket.on('match_over', (d) => {
         renderBoard(d.board);
+        updateScoreboard(d.scores);
         setTimeout(() => {
-            alert(d.isDraw ? '🤝 مساوی!' : `🏆 برنده: ${d.winnerName}`);
+            alert(d.isDraw ? '🤝 مساوی کل مسابقه!' : `🏆 برنده نهایی مسابقه: ${d.winnerName}`);
             document.getElementById('game-section').classList.add('hidden');
             document.getElementById('dashboard-section').classList.remove('hidden');
-        }, 200);
+        }, 300);
     });
-    
+
+    function updateGameUIState(board, turnName, scores, roundNum) {
+        renderBoard(board);
+        updateScoreboard(scores, roundNum);
+        if (turnName) {
+            document.getElementById('turn-indicator').innerText = `نوبت: ${turnName}`;
+        }
+    }
+
+    function updateScoreboard(scores, roundNum) {
+        if (!scores) return;
+        const playerIds = Object.keys(matchPlayersInfo);
+        if (playerIds.length < 2) return;
+        const s1 = scores[playerIds[0]] || 0;
+        const s2 = scores[playerIds[1]] || 0;
+        document.getElementById('match-score-text').innerText = `امتیاز: ${matchPlayersInfo[playerIds[0]]} (${s1}) - (${s2}) ${matchPlayersInfo[playerIds[1]]}`;
+        if (roundNum) {
+            document.getElementById('round-text').innerText = `راند ${roundNum} از ۳`;
+        }
+    }
+
+    function makeMove(i) { socket.emit('make_move', { roomId: currentRoomId, index: i }); }
+
     function confirmSurrender() {
         if (confirm('تایید خروج و باخت؟')) socket.emit('surrender_game', { roomId: currentRoomId });
     }
