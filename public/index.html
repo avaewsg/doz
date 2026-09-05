@@ -94,8 +94,8 @@
             background: linear-gradient(135deg, #00f3ff, #7000ff);
             border: none;
             color: #fff;
-            padding: 15px;
-            font-size: 19px;
+            padding: 14px;
+            font-size: 18px;
             font-family: 'Lalezar', cursive;
             letter-spacing: 1px;
             border-radius: 14px;
@@ -108,6 +108,13 @@
         .neon-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(0, 243, 255, 0.7);
+        }
+
+        .secondary-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(0, 243, 255, 0.4);
+            box-shadow: none;
+            margin-top: 10px;
         }
 
         .danger-btn {
@@ -149,6 +156,7 @@
             filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.7));
         }
 
+        /* تیک آبی رسمی تلگرامی */
         .verified-badge {
             display: inline-flex;
             align-items: center;
@@ -300,18 +308,19 @@
 <body>
 
 <div class="container">
-    <!-- ۱. صفحه ورود -->
+    <!-- ۱. صفحه ورود و ثبت‌نام -->
     <div id="login-section" class="card">
         <h2>DozX</h2>
-        <p>نام کاربری و رمز عبور خود را وارد کنید:</p>
+        <p>لطفاً وارد شوید یا ثبت‌نام کنید:</p>
         <div class="login-box-glow">
             <div class="input-box">
-                <input type="text" id="username-input" placeholder="نام کاربری (مثلا Kiarash)">
+                <input type="text" id="username-input" placeholder="نام کاربری">
             </div>
             <div class="input-box">
                 <input type="password" id="password-input" placeholder="رمز عبور">
             </div>
-            <button class="neon-btn" onclick="login()">ورود / ثبت‌نام ⚡</button>
+            <button class="neon-btn" onclick="registerUser()">ثبت‌نام حساب جدید 📝</button>
+            <button class="neon-btn secondary-btn" onclick="loginUser()">ورود به حساب موجود ⚡</button>
         </div>
     </div>
 
@@ -397,11 +406,18 @@
     let currentRoomId = null;
     let myTurn = false;
 
-    function login() {
+    function registerUser() {
         const username = document.getElementById('username-input').value.trim();
         const password = document.getElementById('password-input').value.trim();
         if (!username || !password) return alert('لطفاً نام کاربری و رمز عبور را وارد کنید');
-        socket.emit('auth', { username, password });
+        socket.emit('register', { username, password });
+    }
+
+    function loginUser() {
+        const username = document.getElementById('username-input').value.trim();
+        const password = document.getElementById('password-input').value.trim();
+        if (!username || !password) return alert('لطفاً نام کاربری و رمز عبور را وارد کنید');
+        socket.emit('login', { username, password });
     }
 
     socket.on('init_data', (user, isOwner) => {
