@@ -264,7 +264,6 @@
             <div class="stats-pills">
                 <div class="pill">💰 <span id="coins-val">40</span></div>
                 <div class="pill">🏆 <span id="trophies-val">0</span></div>
-                <button id="admin-panel-btn" class="btn btn-primary hidden" style="width: auto; padding: 6px 12px; font-size: 13px; margin: 0;" onclick="openAdminPanel()">👑 مدیریت</button>
             </div>
         </div>
 
@@ -282,7 +281,7 @@
             <div class="dash-title">💬 چت عمومی آنلاین</div>
             <div class="global-chat-messages" id="global-chat-messages"></div>
             <div class="chat-input-row">
-                <input type="text" id="global-chat-input" placeholder="پیام خود را بنویسید...">
+                <input type="text" id="global-chat-input" placeholder="پیام خود را بنویسید..." onkeypress="checkChatEnter(event)">
                 <button class="btn btn-primary" onclick="sendGlobalChat()">ارسال</button>
             </div>
         </div>
@@ -364,26 +363,29 @@
     let turnTimerInterval = null;
     let timeLeft = 30;
 
+    socket.on('error_msg', (msg) => {
+        alert(msg);
+    });
+
     function registerUser() {
         const username = document.getElementById('username-input').value.trim();
         const password = document.getElementById('password-input').value.trim();
         if (!username || !password) return alert('لطفاً نام کاربری و رمز عبور را وارد کنید');
-        socket.emit('register', { username, password });
+        socket.emit('register_user', { username, password });
     }
 
     function loginUser() {
         const username = document.getElementById('username-input').value.trim();
         const password = document.getElementById('password-input').value.trim();
         if (!username || !password) return alert('لطفاً نام کاربری و رمز عبور را وارد کنید');
-        socket.emit('login', { username, password });
+        socket.emit('login_user', { username, password });
     }
 
-    socket.on('init_data', (user, isOwner) => {
+    socket.on('login_success', ({ user, isOwner }) => {
         document.getElementById('login-section').classList.add('hidden');
         document.getElementById('dashboard-section').classList.remove('hidden');
         document.getElementById('welcome-user').innerText = user.username;
         document.getElementById('user-initial').innerText = user.username.charAt(0).toUpperCase();
-        if (isOwner) document.getElementById('admin-panel-btn').classList.remove('hidden');
         updateStatsUI(user);
         document.getElementById('welcome-modal').classList.remove('hidden');
     });
@@ -394,9 +396,6 @@
         document.getElementById('trophies-val').innerText = user.trophies;
     }
     socket.on('update_stats', (user) => updateStatsUI(user));
-    socket.on('update_stats_if_online', (username) => {
-        // آپدیت خودکار
-    });
 
     socket.on('update_leaderboard', (topPlayers) => {
         const lbList = document.getElementById('leaderboard-list');
@@ -418,6 +417,10 @@
         if (!input.value.trim()) return;
         socket.emit('send_global_chat', input.value.trim());
         input.value = '';
+    }
+
+    function checkChatEnter(e) {
+        if (e.key === 'Enter') sendGlobalChat();
     }
 
     socket.on('init_global_chat', (msgs) => {
