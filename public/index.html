@@ -27,14 +27,13 @@
         .app-container {
             width: 100vw;
             min-height: 100vh;
-            max-width: 1600px;
+            max-width: 1500px;
             padding: 16px;
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
 
-        /* صفحه ورود */
         .login-wrapper {
             display: flex;
             justify-content: center;
@@ -51,7 +50,7 @@
             width: 100%;
             max-width: 400px;
             backdrop-filter: blur(20px);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,243,255,0.05);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
             text-align: center;
         }
 
@@ -65,7 +64,6 @@
         }
 
         .auth-card p { color: #94a3b8; font-size: 13px; margin-bottom: 20px; }
-
         .input-group { margin-bottom: 14px; }
 
         input {
@@ -75,16 +73,13 @@
             border: 1.5px solid rgba(255, 255, 255, 0.1);
             background: rgba(5, 5, 12, 0.8);
             color: #fff;
-            font-size: 16px; /* جلوگیری از زوم خودکار در آیفون و اندروید */
+            font-size: 16px;
             font-family: 'Vazirmatn', sans-serif;
             outline: none;
             transition: all 0.3s;
         }
 
-        input:focus {
-            border-color: #00f3ff;
-            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
-        }
+        input:focus { border-color: #00f3ff; box-shadow: 0 0 15px rgba(0, 243, 255, 0.3); }
 
         .btn {
             width: 100%;
@@ -109,25 +104,20 @@
             margin-bottom: 10px;
         }
 
-        .btn-primary:active { transform: scale(0.97); }
-
         .btn-secondary {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: #cbd5e1;
         }
 
-        /* داشبورد ریسپانسیو (لپ‌تاپ و اندروید) */
         .dashboard-grid {
             display: grid;
             grid-template-columns: 300px 1fr 320px;
             gap: 16px;
             width: 100%;
-            max-width: 1500px;
             margin: 0 auto;
         }
 
-        /* هدر بالا سمت چپ */
         .top-left-profile {
             grid-column: 1 / -1;
             display: flex;
@@ -140,141 +130,93 @@
             backdrop-filter: blur(15px);
         }
 
-        .user-welcome-box {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
+        .user-welcome-box { display: flex; align-items: center; gap: 12px; }
         .user-avatar {
-            width: 45px; height: 45px;
-            border-radius: 50%;
+            width: 45px; height: 45px; border-radius: 50%;
             background: linear-gradient(135deg, #00f3ff, #ff007f);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Lalezar', cursive;
-            font-size: 20px;
+            display: flex; justify-content: center; align-items: center;
+            font-family: 'Lalezar', cursive; font-size: 20px;
             box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
-            flex-shrink: 0;
         }
 
-        .user-info h2 { font-family: 'Lalezar', cursive; font-size: 20px; color: #fff; line-height: 1.2; }
+        .user-info h2 { font-family: 'Lalezar', cursive; font-size: 20px; color: #fff; }
         .user-info p { font-size: 11px; color: #00f3ff; }
 
-        .stats-pills {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
+        .stats-pills { display: flex; gap: 8px; align-items: center; }
         .pill {
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 6px 12px;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 5px;
+            padding: 6px 12px; border-radius: 10px; font-size: 13px; font-weight: 700;
         }
 
-        /* کارت‌های داشبورد */
         .dash-card {
             background: rgba(10, 10, 20, 0.7);
             border: 1px solid rgba(255, 255, 255, 0.07);
-            border-radius: 20px;
-            padding: 18px;
-            backdrop-filter: blur(20px);
-            display: flex;
-            flex-direction: column;
+            border-radius: 20px; padding: 18px;
+            backdrop-filter: blur(20px); display: flex; flex-direction: column;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
         .dash-title {
-            font-family: 'Lalezar', cursive;
-            font-size: 18px;
-            color: #00f3ff;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            font-family: 'Lalezar', cursive; font-size: 18px; color: #00f3ff; margin-bottom: 12px;
         }
 
-        /* ستون سمت چپ */
-        .left-sidebar { display: flex; flex-direction: column; gap: 16px; }
+        .left-sidebar, .right-sidebar { display: flex; flex-direction: column; gap: 16px; }
         .leaderboard-box { height: 320px; overflow-y: auto; }
-
         .lb-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.04);
-            font-size: 13px;
-            align-items: center;
+            display: flex; justify-content: space-between; padding: 8px 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 13px; align-items: center;
         }
 
-        /* ستون وسط: چت */
         .center-chat-area { display: flex; flex-direction: column; height: 420px; }
         .global-chat-messages {
-            flex: 1;
-            background: rgba(4, 4, 10, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 14px;
-            padding: 12px;
-            overflow-y: auto;
-            margin-bottom: 12px;
-            font-size: 13px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+            flex: 1; background: rgba(4, 4, 10, 0.5); border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 14px; padding: 12px; overflow-y: auto; margin-bottom: 12px; font-size: 13px;
+            display: flex; flex-direction: column; gap: 8px;
         }
-
         .chat-input-row { display: flex; gap: 8px; }
         .chat-input-row input { flex: 1; padding: 10px 14px; font-size: 14px; }
         .chat-input-row .btn { width: auto; padding: 0 20px; font-size: 16px; }
-
-        /* ستون سمت راست: بازی‌ها */
-        .right-sidebar { display: flex; flex-direction: column; gap: 16px; }
 
         .btn-bot-easy { background: #2ed573; color: #000; font-family: 'Lalezar', cursive; }
         .btn-bot-med { background: #ffa502; color: #000; font-family: 'Lalezar', cursive; }
         .btn-bot-hard { background: #ff4757; color: #fff; font-family: 'Lalezar', cursive; }
 
-        /* صفحات بازی */
         .game-layout {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            width: 100%; min-height: 100vh;
+        }
+
+        .players-header {
+            display: flex; gap: 30px; align-items: center;
+            font-family: 'Lalezar', cursive; font-size: 18px; margin-bottom: 15px;
+        }
+        .player-badge {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            padding: 8px 20px; border-radius: 16px; text-align: center;
+            transition: all 0.3s;
+        }
+        .player-badge.active-turn {
+            border-color: #00f3ff; box-shadow: 0 0 20px rgba(0,243,255,0.4); background: rgba(0,243,255,0.1);
         }
 
         .board {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin: 15px 0;
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 15px 0;
         }
-
         .cell {
-            background: rgba(12, 12, 25, 0.9);
-            border: 2px solid rgba(0, 243, 255, 0.3);
-            border-radius: 16px;
-            width: 85px; height: 85px;
-            font-size: 45px;
-            font-family: 'Lalezar', cursive;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
+            background: rgba(12, 12, 25, 0.9); border: 2px solid rgba(0, 243, 255, 0.3);
+            border-radius: 16px; width: 85px; height: 85px; font-size: 45px;
+            font-family: 'Lalezar', cursive; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s;
         }
-
         .cell.x { color: #00f3ff; text-shadow: 0 0 15px rgba(0,243,255,0.6); }
         .cell.o { color: #ff007f; text-shadow: 0 0 15px rgba(255,0,127,0.6); }
+
+        .timer-box {
+            font-family: 'Lalezar', cursive; font-size: 18px; color: #ffa502; margin-bottom: 12px;
+            background: rgba(255, 165, 2, 0.1); padding: 5px 15px; border-radius: 10px;
+            border: 1px solid rgba(255, 165, 2, 0.3);
+        }
 
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -289,25 +231,16 @@
         .verified-badge { background: #229ed9; color: #fff; width: 14px; height: 14px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 9px; }
         .hidden { display: none !important; }
 
-        /* بهینه‌سازی قطعی برای موبایل و تبلت (تغییر به ساختار تک‌ستونی روان) */
         @media (max-width: 1024px) {
-            .app-container { height: auto; min-height: 100vh; padding: 10px; }
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-                gap: 12px;
-            }
+            .dashboard-grid { grid-template-columns: 1fr; gap: 12px; }
             .center-chat-area { height: 350px; }
             .top-left-profile { flex-direction: column; gap: 10px; align-items: stretch; text-align: center; }
-            .user-welcome-box { justify-content: center; }
-            .stats-pills { justify-content: center; flex-wrap: wrap; }
-            .cell { width: 90px; height: 90px; }
         }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <!-- ۱. صفحه ورود -->
     <div id="login-section" class="login-wrapper">
         <div class="auth-card">
             <h1>DOZX</h1>
@@ -319,9 +252,7 @@
         </div>
     </div>
 
-    <!-- ۲. داشبورد اصلی ریسپانسیو -->
     <div id="dashboard-section" class="dashboard-grid hidden">
-        <!-- هدر بالا -->
         <div class="top-left-profile">
             <div class="user-welcome-box">
                 <div class="user-avatar" id="user-initial">K</div>
@@ -337,7 +268,6 @@
             </div>
         </div>
 
-        <!-- ستون ۱: لیدربورد و کانال -->
         <div class="left-sidebar">
             <div class="dash-card leaderboard-box">
                 <div class="dash-title">🏆 لیدربورد برترین‌ها</div>
@@ -348,7 +278,6 @@
             </a>
         </div>
 
-        <!-- ستون ۲: چت عمومی -->
         <div class="dash-card center-chat-area">
             <div class="dash-title">💬 چت عمومی آنلاین</div>
             <div class="global-chat-messages" id="global-chat-messages"></div>
@@ -358,7 +287,6 @@
             </div>
         </div>
 
-        <!-- ستون ۳: بخش بازی‌ها -->
         <div class="right-sidebar">
             <div class="dash-card" style="gap: 10px;">
                 <div class="dash-title">⚔️ بخش آنلاین</div>
@@ -377,7 +305,6 @@
         </div>
     </div>
 
-    <!-- ۳. صفحه انتظار آنلاین -->
     <div id="waiting-section" class="login-wrapper hidden">
         <div class="auth-card" style="text-align: center;">
             <h2 style="font-family:'Lalezar'; font-size: 24px; color: #00f3ff; margin-bottom: 12px;">در حال جستجوی حریف...</h2>
@@ -386,47 +313,46 @@
         </div>
     </div>
 
-    <!-- ۴. صفحه بازی آنلاین -->
     <div id="game-section" class="game-layout hidden">
-        <div style="display: flex; gap: 20px; font-family:'Lalezar'; font-size: 16px; margin-bottom: 5px;">
-            <span style="color: #00f3ff;" id="p1-name">شما</span> VS <span style="color: #ff007f;" id="p2-name">حریف</span>
+        <div class="players-header">
+            <div class="player-badge" id="player1-badge">
+                <div style="font-size: 14px; font-weight: bold; color: #00f3ff;" id="p1-symbol-label">X</div>
+                <div id="p1-name">شما</div>
+            </div>
+            <span style="color: #64748b;">VS</span>
+            <div class="player-badge" id="player2-badge">
+                <div style="font-size: 14px; font-weight: bold; color: #ff007f;" id="p2-symbol-label">O</div>
+                <div id="p2-name">حریف</div>
+            </div>
         </div>
+
+        <div class="timer-box" id="turn-timer">⏱️ زمان باقی‌مانده: ۳۰ ثانیه</div>
+
         <div class="board" id="game-board">
             <div class="cell" onclick="makeMove(0)"></div><div class="cell" onclick="makeMove(1)"></div><div class="cell" onclick="makeMove(2)"></div>
             <div class="cell" onclick="makeMove(3)"></div><div class="cell" onclick="makeMove(4)"></div><div class="cell" onclick="makeMove(5)"></div>
             <div class="cell" onclick="makeMove(6)"></div><div class="cell" onclick="makeMove(7)"></div><div class="cell" onclick="makeMove(8)"></div>
         </div>
-        <div id="turn-indicator" style="font-family: 'Lalezar'; font-size: 18px; color: #ffeb3b; margin-bottom: 10px;">نوبت شماست!</div>
-        <button class="btn btn-secondary" style="width: auto; padding: 8px 20px; background: #ff4757; color:#fff;" onclick="confirmSurrender()">خروج / پذیرش باخت</button>
+
+        <button class="btn btn-secondary" style="width: auto; padding: 8px 20px; background: #ff4757; color:#fff; margin-top: 10px;" onclick="confirmSurrender()">خروج / پذیرش باخت</button>
     </div>
 
-    <!-- ۵. صفحه بازی با ربات -->
     <div id="bot-game-section" class="game-layout hidden">
-        <h2 style="font-family:'Lalezar'; color: #2ed573; font-size: 22px; margin-bottom: 5px;">بازی با ربات هوشمند 🤖</h2>
+        <h2 style="font-family:'Lalezar'; color: #2ed573; font-size: 22px; margin-bottom: 10px;">بازی با ربات هوشمند 🤖</h2>
         <div class="board" id="bot-game-board">
             <div class="cell" onclick="makeBotMove(0)"></div><div class="cell" onclick="makeBotMove(1)"></div><div class="cell" onclick="makeBotMove(2)"></div>
             <div class="cell" onclick="makeBotMove(3)"></div><div class="cell" onclick="makeBotMove(4)"></div><div class="cell" onclick="makeBotMove(5)"></div>
             <div class="cell" onclick="makeBotMove(6)"></div><div class="cell" onclick="makeBotMove(7)"></div><div class="cell" onclick="makeBotMove(8)"></div>
         </div>
-        <div id="bot-turn-indicator" style="font-family: 'Lalezar'; font-size: 18px; color: #ffeb3b; margin-bottom: 10px;">نوبت شماست!</div>
-        <button class="btn btn-secondary" style="width: auto; padding: 8px 20px; background: #ff4757; color:#fff;" onclick="exitBotGame()">خروج از بازی</button>
+        <button class="btn btn-secondary" style="width: auto; padding: 8px 20px; background: #ff4757; color:#fff; margin-top: 10px;" onclick="exitBotGame()">خروج از بازی</button>
     </div>
 </div>
 
-<!-- مودال خوش‌آمدگویی -->
 <div id="welcome-modal" class="modal hidden">
     <div class="modal-content">
         <h3 style="font-family: 'Lalezar', cursive; color: #00f3ff; margin-bottom: 10px; font-size: 22px;">🎮 به DOZX خوش آمدید!</h3>
-        <p style="font-size: 12px; line-height: 1.7; color: #cbd5e1; margin-bottom: 18px;">بازی آنلاین دوز با دوستان و بازیکنان دیگر، سریع، ساده و سرگرم‌کننده.<br>👨‍💻 توسعه‌یافته با بالاترین کیفیت برای تجربه‌ای بی‌نظیر.</p>
-        <button class="btn btn-primary" style="background: #7000ff; margin-bottom: 8px;" onclick="closeWelcomeModal()">ورود به داشبورد 🚀</button>
-    </div>
-</div>
-
-<div id="admin-modal" class="modal hidden">
-    <div class="modal-content">
-        <h3 style="font-family: 'Lalezar', cursive; color: #ffa502; margin-bottom: 12px;">مدیریت کاربران</h3>
-        <div id="admin-user-list" style="max-height: 220px; overflow-y: auto; margin-bottom: 15px;"></div>
-        <button class="btn btn-secondary" style="background: #ff4757; color: #fff; border:none;" onclick="closeAdminPanel()">بستن پنل</button>
+        <p style="font-size: 12px; line-height: 1.7; color: #cbd5e1; margin-bottom: 18px;">بازی آنلاین دوز با قابلیت انتخاب تصادفی نوبت، تایمر ۳۰ ثانیه‌ای هوشمند و جوایز خفن!</p>
+        <button class="btn btn-primary" style="background: #7000ff;" onclick="closeWelcomeModal()">ورود به داشبورد 🚀</button>
     </div>
 </div>
 
@@ -434,6 +360,9 @@
 <script>
     const socket = io();
     let currentRoomId = null;
+    let gameSymbols = {};
+    let turnTimerInterval = null;
+    let timeLeft = 30;
 
     function registerUser() {
         const username = document.getElementById('username-input').value.trim();
@@ -465,6 +394,9 @@
         document.getElementById('trophies-val').innerText = user.trophies;
     }
     socket.on('update_stats', (user) => updateStatsUI(user));
+    socket.on('update_stats_if_online', (username) => {
+        // آپدیت خودکار
+    });
 
     socket.on('update_leaderboard', (topPlayers) => {
         const lbList = document.getElementById('leaderboard-list');
@@ -473,43 +405,13 @@
             const item = document.createElement('div');
             item.className = 'lb-row';
             let rank = `#${index + 1}`;
-            if (index === 0) rank = '🥇';
-            else if (index === 1) rank = '🥈';
-            else if (index === 2) rank = '🥉';
+            if (index === 0) rank = '🥇'; else if (index === 1) rank = '🥈'; else if (index === 2) rank = '🥉';
             let name = p.username;
             if (p.isOwner) name += ` <span class="verified-badge">✓</span>`;
             item.innerHTML = `<span>${rank} ${name}</span> <span style="color: #ffd700;">🏆 ${p.trophies}</span>`;
             lbList.appendChild(item);
         });
     });
-
-    let allUsersCache = [];
-    socket.on('update_user_list', (users) => allUsersCache = users);
-
-    function openAdminPanel() {
-        document.getElementById('admin-modal').classList.remove('hidden');
-        const listDiv = document.getElementById('admin-user-list');
-        listDiv.innerHTML = '';
-        allUsersCache.forEach(u => {
-            const row = document.createElement('div');
-            row.className = 'lb-row';
-            let name = u.username;
-            if (u.isOwner) name += ` <span class="verified-badge">✓</span>`;
-            row.innerHTML = `<span>${name} (${u.coins})</span> <button class="btn btn-primary" style="width: auto; padding: 2px 8px; font-size: 11px; margin:0;" onclick="changeUserCoins('${u.username}')">تغییر</button>`;
-            listDiv.appendChild(row);
-        });
-    }
-    function closeAdminPanel() { document.getElementById('admin-modal').classList.add('hidden'); }
-
-    function changeUserCoins(targetUsername) {
-        const newCoins = prompt(`مقدار سکه جدید برای ${targetUsername}:`);
-        if (newCoins !== null && !isNaN(newCoins)) {
-            socket.emit('admin_set_coins', { targetUsername, newCoins: parseInt(newCoins) });
-            setTimeout(openAdminPanel, 300);
-        }
-    }
-
-    socket.on('error_msg', (msg) => alert(msg));
 
     function sendGlobalChat() {
         const input = document.getElementById('global-chat-input');
@@ -539,6 +441,92 @@
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
+    function findGame() {
+        document.getElementById('dashboard-section').classList.add('hidden');
+        document.getElementById('waiting-section').classList.remove('hidden');
+        socket.emit('find_game');
+    }
+    function cancelSearch() { socket.emit('cancel_search'); }
+    socket.on('search_cancelled', () => {
+        document.getElementById('waiting-section').classList.add('hidden');
+        document.getElementById('dashboard-section').classList.remove('hidden');
+    });
+
+    socket.on('game_start', (d) => {
+        currentRoomId = d.roomId;
+        gameSymbols = d.symbols;
+        document.getElementById('waiting-section').classList.add('hidden');
+        document.getElementById('game-section').classList.remove('hidden');
+
+        const oppId = Object.keys(d.players).find(id => id !== socket.id);
+        document.getElementById('p1-name').innerText = d.players[socket.id];
+        document.getElementById('p2-name').innerText = d.players[oppId];
+
+        document.getElementById('p1-symbol-label').innerText = gameSymbols[socket.id];
+        document.getElementById('p2-symbol-label').innerText = gameSymbols[oppId];
+
+        renderBoard(Array(9).fill(null), d.turn);
+    });
+
+    function makeMove(i) {
+        socket.emit('make_move', { roomId: currentRoomId, index: i });
+    }
+
+    socket.on('update_board', (d) => {
+        renderBoard(d.board, d.turn);
+    });
+
+    function renderBoard(board, currentTurn) {
+        const cells = document.querySelectorAll('#game-board .cell');
+        for (let i = 0; i < 9; i++) {
+            cells[i].innerText = board[i] || '';
+            cells[i].className = 'cell';
+            if (board[i] === 'X') cells[i].classList.add('x');
+            if (board[i] === 'O') cells[i].classList.add('o');
+        }
+
+        const p1Badge = document.getElementById('player1-badge');
+        const p2Badge = document.getElementById('player2-badge');
+        
+        if (currentTurn === socket.id) {
+            p1Badge.classList.add('active-turn');
+            p2Badge.classList.remove('active-turn');
+        } else {
+            p2Badge.classList.add('active-turn');
+            p1Badge.classList.remove('active-turn');
+        }
+
+        startTurnTimer();
+    }
+
+    function startTurnTimer() {
+        if (turnTimerInterval) clearInterval(turnTimerInterval);
+        timeLeft = 30;
+        document.getElementById('turn-timer').innerText = `⏱️ زمان باقی‌مانده: ${timeLeft} ثانیه`;
+
+        turnTimerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById('turn-timer').innerText = `⏱️ زمان باقی‌مانده: ${timeLeft} ثانیه`;
+            if (timeLeft <= 0) {
+                clearInterval(turnTimerInterval);
+            }
+        }, 1000);
+    }
+
+    socket.on('game_over', (d) => {
+        if (turnTimerInterval) clearInterval(turnTimerInterval);
+        renderBoard(d.board, null);
+        setTimeout(() => {
+            alert(d.isDraw ? '🤝 مساوی شد!' : `🏆 برنده بازی: ${d.winnerName}`);
+            document.getElementById('game-section').classList.add('hidden');
+            document.getElementById('dashboard-section').classList.remove('hidden');
+        }, 200);
+    });
+
+    function confirmSurrender() {
+        if (confirm('تایید خروج و پذیرش باخت؟')) socket.emit('surrender_game', { roomId: currentRoomId });
+    }
+
     function startBotGame(diff) {
         document.getElementById('dashboard-section').classList.add('hidden');
         document.getElementById('bot-game-section').classList.remove('hidden');
@@ -557,50 +545,6 @@
     });
     function renderBotBoard(board) {
         const cells = document.querySelectorAll('#bot-game-board .cell');
-        for (let i = 0; i < 9; i++) {
-            cells[i].innerText = board[i] || '';
-            cells[i].className = 'cell';
-            if (board[i] === 'X') cells[i].classList.add('x');
-            if (board[i] === 'O') cells[i].classList.add('o');
-        }
-    }
-
-    function findGame() {
-        document.getElementById('dashboard-section').classList.add('hidden');
-        document.getElementById('waiting-section').classList.remove('hidden');
-        socket.emit('find_game');
-    }
-    function cancelSearch() { socket.emit('cancel_search'); }
-    socket.on('search_cancelled', () => {
-        document.getElementById('waiting-section').classList.add('hidden');
-        document.getElementById('dashboard-section').classList.remove('hidden');
-    });
-
-    socket.on('game_start', (d) => {
-        currentRoomId = d.roomId;
-        document.getElementById('waiting-section').classList.add('hidden');
-        document.getElementById('game-section').classList.remove('hidden');
-        document.getElementById('p1-name').innerText = d.players[socket.id];
-        const oppId = Object.keys(d.players).find(id => id !== socket.id);
-        document.getElementById('p2-name').innerText = d.players[oppId];
-        renderBoard(Array(9).fill(null));
-    });
-
-    function makeMove(i) { socket.emit('make_move', { roomId: currentRoomId, index: i }); }
-    socket.on('update_board', (d) => renderBoard(d.board));
-    socket.on('game_over', (d) => {
-        renderBoard(d.board);
-        setTimeout(() => {
-            alert(d.isDraw ? '🤝 مساوی!' : `🏆 برنده: ${d.winnerName}`);
-            document.getElementById('game-section').classList.add('hidden');
-            document.getElementById('dashboard-section').classList.remove('hidden');
-        }, 200);
-    });
-    function confirmSurrender() {
-        if (confirm('تایید خروج و باخت؟')) socket.emit('surrender_game', { roomId: currentRoomId });
-    }
-    function renderBoard(board) {
-        const cells = document.querySelectorAll('#game-board .cell');
         for (let i = 0; i < 9; i++) {
             cells[i].innerText = board[i] || '';
             cells[i].className = 'cell';
