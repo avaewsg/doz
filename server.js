@@ -2,6 +2,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const server = http.createServer(app);
@@ -9,64 +10,115 @@ const io = new Server(server);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-const users = {}; // { socketId: { username, coins: 40, trophies: 0 } }
+const DB_FILE = path.join(__dirname, 'database.json');
+
+// بارگذاری پایگاه داده از روی دیسک (برای نپریدن اطلاعات هنگام آپدیت روی رایلی)
+let db = { users: {} };
+if (fs.existsSync(DB_FILE)) {
+    try {
+        db = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+    } catch (e) {
+        console.log('خطا در خواندن دیتابیس، ایجاد فایل جدید');
+    }
+}
+
+function saveDB() {
+    fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+}
+
 let waitingPlayers = [];
 const activeGames = {};
 
 io.on('connection', (socket) => {
     console.log('کاربر متصل شد:', socket.id);
 
-    socket.on('login', (username) => {
-        if (!users[socket.id]) {
-            users[socket.id] = {
-                username: username || `بازیکن_${Math.floor(Math.random() * 1000)}`,
+    // ثبت‌نام یا ورود
+    socket.on('auth', ({ username, password }) => {
+        username = username.trim();
+        if (!username || !password) {
+            return socket.emit('error_msg', 'لطفاً نام کاربری و رمز عبور را وارد کنید');
+        }
+
+        // بررسی اکانت مالک
+        if (username === 'Kiarash') {
+            if (password !== 'kia12') {
+                return socket.emit('error_msg', 'رمز عبور مالک اشتباه است!');
+            }
+        }
+
+        if (db.users[username]) {
+            // ورود کاربر موجود
+            if (db.users[username].password !== password) {
+                return socket.emit('error_msg', 'رمز عبور اشتباه است!');
+            }
+            db.users[username].socketId = socket.id;
+        } else {
+            // ثبت‌نام کاربر جدید
+            db.users[username] = {
+                username,
+                password,
                 coins: 40,
-                trophies: 0
+                trophies: 0,
+                isOwner: (username === 'Kiarash'),
+                socketId: socket.id
             };
         }
-        socket.emit('init_data', users[socket.id]);
+
+        saveDB();
+        socket.data.username = username;
+        socket.emit('init_data', getPublicUserData(db.users[username]), db.users[username].isOwner);
         broadcastLeaderboard();
+        broadcastUserList();
     });
 
     socket.on('find_game', () => {
-        const player = users[socket.id];
-        if (!player) return;
+        const username = socket.data.username;
+        if (!username || !db.users[username]) return;
+        const player = db.users[username];
 
-        if (player.coins < 10) {
-            socket.emit('error_msg', 'سکه‌های شما برای ورود کافی نیست (حداقل ۱۰ سکه)');
-            return;
+        // مالک سکه بی‌نهایت دارد و ازش کم نمی‌شود
+        if (!player.isOwner) {
+            if (player.coins < 10) {
+                socket.emit('error_msg', 'سکه‌های شما برای ورود کافی نیست (حداقل ۱۰ سکه)');
+                return;
+            }
+            player.coins -= 10;
+            saveDB();
+            socket.emit('update_stats', getPublicUserData(player));
+            broadcastLeaderboard();
         }
 
         if (waitingPlayers.includes(socket.id)) return;
 
-        player.coins -= 10;
-        socket.emit('update_stats', player);
-        broadcastLeaderboard();
-
         while (waitingPlayers.length > 0) {
-            const opponentId = waitingPlayers.shift();
+            const opponentSocketId = waitingPlayers.shift();
+            const opponentSocket = io.sockets.sockets.get(opponentSocketId);
             
-            if (opponentId !== socket.id && users[opponentId] && io.sockets.sockets.has(opponentId)) {
-                const roomId = `room_${Date.now()}`;
-                
-                activeGames[roomId] = {
-                    players: [socket.id, opponentId],
-                    board: Array(9).fill(null),
-                    turn: socket.id
-                };
+            if (opponentSocketId !== socket.id && opponentSocket) {
+                const opponentUsername = opponentSocket.data.username;
+                if (opponentUsername && db.users[opponentUsername]) {
+                    const roomId = `room_${Date.now()}`;
+                    
+                    activeGames[roomId] = {
+                        players: [socket.id, opponentSocketId],
+                        usernames: [username, opponentUsername],
+                        board: Array(9).fill(null),
+                        turn: socket.id
+                    };
 
-                socket.join(roomId);
-                io.sockets.sockets.get(opponentId)?.join(roomId);
+                    socket.join(roomId);
+                    opponentSocket.join(roomId);
 
-                io.to(roomId).emit('game_start', {
-                    roomId,
-                    players: {
-                        [socket.id]: users[socket.id].username,
-                        [opponentId]: users[opponentId].username
-                    },
-                    turn: socket.id
-                });
-                return;
+                    io.to(roomId).emit('game_start', {
+                        roomId,
+                        players: {
+                            [socket.id]: username,
+                            [opponentSocketId]: opponentUsername
+                        },
+                        turn: socket.id
+                    });
+                    return;
+                }
             }
         }
 
@@ -78,9 +130,11 @@ io.on('connection', (socket) => {
         const index = waitingPlayers.indexOf(socket.id);
         if (index !== -1) {
             waitingPlayers.splice(index, 1);
-            if (users[socket.id]) {
-                users[socket.id].coins += 10;
-                socket.emit('update_stats', users[socket.id]);
+            const username = socket.data.username;
+            if (username && db.users[username] && !db.users[username].isOwner) {
+                db.users[username].coins += 10;
+                saveDB();
+                socket.emit('update_stats', getPublicUserData(db.users[username]));
                 broadcastLeaderboard();
             }
             socket.emit('search_cancelled');
@@ -98,29 +152,36 @@ io.on('connection', (socket) => {
         const winnerSymbol = checkWin(game.board);
         
         if (winnerSymbol || game.board.every(cell => cell !== null)) {
-            let finalWinner = null;
-            const p1 = game.players[0];
-            const p2 = game.players[1];
+            let finalWinnerSocket = null;
+            const p1Socket = game.players[0];
+            const p2Socket = game.players[1];
+            const u1 = game.usernames[0];
+            const u2 = game.usernames[1];
 
             if (winnerSymbol) {
-                finalWinner = (winnerSymbol === 'X') ? p1 : p2;
+                finalWinnerSocket = (winnerSymbol === 'X') ? p1Socket : p2Socket;
             }
 
-            if (finalWinner) {
-                const loser = finalWinner === p1 ? p2 : p1;
+            if (finalWinnerSocket) {
+                const loserSocket = finalWinnerSocket === p1Socket ? p2Socket : p1Socket;
+                const winnerUser = db.users[finalWinnerSocket === p1Socket ? u1 : u2];
+                const loserUser = db.users[loserSocket === p1Socket ? u1 : u2];
                 
-                users[finalWinner].coins += 80;
-                users[finalWinner].trophies += 40;
-                users[loser].trophies = Math.max(0, users[loser].trophies - 10);
+                winnerUser.coins += 80;
+                winnerUser.trophies += 40;
+                if (!loserUser.isOwner) {
+                    loserUser.trophies = Math.max(0, loserUser.trophies - 10);
+                }
+                saveDB();
 
                 io.to(roomId).emit('game_over', {
                     board: game.board,
-                    winnerName: users[finalWinner].username,
+                    winnerName: winnerUser.username,
                     isDraw: false
                 });
 
-                io.to(finalWinner).emit('update_stats', users[finalWinner]);
-                io.to(loser).emit('update_stats', users[loser]);
+                io.to(p1Socket).emit('update_stats', getPublicUserData(db.users[u1]));
+                io.to(p2Socket).emit('update_stats', getPublicUserData(db.users[u2]));
             } else {
                 io.to(roomId).emit('game_over', {
                     board: game.board,
@@ -136,11 +197,34 @@ io.on('connection', (socket) => {
         }
     });
 
+    // چت در حین بازی
+    socket.on('send_chat', ({ roomId, message }) => {
+        const username = socket.data.username;
+        if (!username) return;
+        io.to(roomId).emit('receive_chat', { username, message });
+    });
+
+    // مدیریت سکه توسط مالک
+    socket.on('admin_set_coins', ({ targetUsername, newCoins }) => {
+        const adminUsername = socket.data.username;
+        if (!adminUsername || !db.users[adminUsername]?.isOwner) return;
+
+        if (db.users[targetUsername]) {
+            db.users[targetUsername].coins = parseInt(newCoins) || 0;
+            saveDB();
+            broadcastLeaderboard();
+            broadcastUserList();
+            
+            const targetSocketId = db.users[targetUsername].socketId;
+            if (targetSocketId) {
+                io.to(targetSocketId).emit('update_stats', getPublicUserData(db.users[targetUsername]));
+            }
+        }
+    });
+
     socket.on('disconnect', () => {
         const index = waitingPlayers.indexOf(socket.id);
         if (index !== -1) waitingPlayers.splice(index, 1);
-        delete users[socket.id];
-        broadcastLeaderboard();
     });
 });
 
@@ -158,14 +242,34 @@ function checkWin(b) {
     return null;
 }
 
-// ارسال لیست ۱۰ نفر برتر به همه کاربران
-etaLoop = setInterval(broadcastLeaderboard, 5000);
+function getPublicUserData(user) {
+    return {
+        username: user.username,
+        coins: user.isOwner ? 'بی‌نهایت ♾️' : user.coins,
+        rawCoins: user.coins,
+        trophies: user.trophies,
+        isOwner: user.isOwner
+    };
+}
+
 function broadcastLeaderboard() {
-    const allUsers = Object.values(users);
-    // مرتب‌سازی بر اساس کاپ از زیاد به کم
+    const allUsers = Object.values(db.users);
     allUsers.sort((a, b) => b.trophies - a.trophies);
-    const top10 = allUsers.slice(0, 10);
+    const top10 = allUsers.slice(0, 10).map(u => ({
+        username: u.username,
+        trophies: u.trophies,
+        isOwner: u.isOwner
+    }));
     io.emit('update_leaderboard', top10);
+}
+
+function broadcastUserList() {
+    const allUsers = Object.values(db.users).map(u => ({
+        username: u.username,
+        coins: u.coins,
+        isOwner: u.isOwner
+    }));
+    io.emit('update_user_list', allUsers);
 }
 
 const PORT = process.env.PORT || 3000;
