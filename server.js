@@ -10,8 +10,8 @@ const io = new Server(server);
 app.use(express.static(path.join(__dirname, 'public')));
 
 const users = {}; // { socketId: { username, coins: 40, trophies: 0 } }
-let waitingPlayers = []; // صف انتظار
-const activeGames = {}; // بازی‌های فعال
+let waitingPlayers = [];
+const activeGames = {};
 
 io.on('connection', (socket) => {
     console.log('کاربر متصل شد:', socket.id);
@@ -20,11 +20,12 @@ io.on('connection', (socket) => {
         if (!users[socket.id]) {
             users[socket.id] = {
                 username: username || `بازیکن_${Math.floor(Math.random() * 1000)}`,
-                coins: 40, // شروع با 40 سکه
+                coins: 40,
                 trophies: 0
             };
         }
         socket.emit('init_data', users[socket.id]);
+        broadcastLeaderboard();
     });
 
     socket.on('find_game', () => {
@@ -40,6 +41,7 @@ io.on('connection', (socket) => {
 
         player.coins -= 10;
         socket.emit('update_stats', player);
+        broadcastLeaderboard();
 
         while (waitingPlayers.length > 0) {
             const opponentId = waitingPlayers.shift();
@@ -50,7 +52,7 @@ io.on('connection', (socket) => {
                 activeGames[roomId] = {
                     players: [socket.id, opponentId],
                     board: Array(9).fill(null),
-                    turn: socket.id // تصادفی یا شروع‌کننده نفر اول
+                    turn: socket.id
                 };
 
                 socket.join(roomId);
@@ -77,8 +79,9 @@ io.on('connection', (socket) => {
         if (index !== -1) {
             waitingPlayers.splice(index, 1);
             if (users[socket.id]) {
-                users[socket.id].coins += 10; // برگشت سکه
+                users[socket.id].coins += 10;
                 socket.emit('update_stats', users[socket.id]);
+                broadcastLeaderboard();
             }
             socket.emit('search_cancelled');
         }
@@ -95,7 +98,6 @@ io.on('connection', (socket) => {
         const winnerSymbol = checkWin(game.board);
         
         if (winnerSymbol || game.board.every(cell => cell !== null)) {
-            // پایان بازی یک مرحله‌ای
             let finalWinner = null;
             const p1 = game.players[0];
             const p2 = game.players[1];
@@ -120,13 +122,13 @@ io.on('connection', (socket) => {
                 io.to(finalWinner).emit('update_stats', users[finalWinner]);
                 io.to(loser).emit('update_stats', users[loser]);
             } else {
-                // مساوی (برگشت سکه ورودی یا حالت بی‌نصیب)
                 io.to(roomId).emit('game_over', {
                     board: game.board,
                     winnerName: 'مساوی!',
                     isDraw: true
                 });
             }
+            broadcastLeaderboard();
             delete activeGames[roomId];
         } else {
             game.turn = game.players.find(id => id !== socket.id);
@@ -138,6 +140,7 @@ io.on('connection', (socket) => {
         const index = waitingPlayers.indexOf(socket.id);
         if (index !== -1) waitingPlayers.splice(index, 1);
         delete users[socket.id];
+        broadcastLeaderboard();
     });
 });
 
@@ -155,5 +158,15 @@ function checkWin(b) {
     return null;
 }
 
+// ارسال لیست ۱۰ نفر برتر به همه کاربران
+etaLoop = setInterval(broadcastLeaderboard, 5000);
+function broadcastLeaderboard() {
+    const allUsers = Object.values(users);
+    // مرتب‌سازی بر اساس کاپ از زیاد به کم
+    allUsers.sort((a, b) => b.trophies - a.trophies);
+    const top10 = allUsers.slice(0, 10);
+    io.emit('update_leaderboard', top10);
+}
+
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`سرور نئونی روی پورت ${PORT} اجرا شد`));
+server.listen(PORT, () => console.log(`سرور DozX روی پورت ${PORT} اجرا شد`));
