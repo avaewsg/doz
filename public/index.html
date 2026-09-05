@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دوز آنلاین خفن</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap');
+        body {
+            background: radial-gradient(circle, #1a1a2e, #0f0c1b);
+            color: #fff;
+            font-family: 'Vazirmatn', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        .container { max-width: 400px; margin: auto; }
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+            margin-bottom: 20px;
+        }
+        input {
+            width: 80%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 16px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        button {
+            background: linear-gradient(45deg, #00f3ff, #7000ff);
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(112, 0, 255, 0.5);
+            transition: 0.2s;
+        }
+        button:active { transform: scale(0.95); }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .cell {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(0, 243, 255, 0.3);
+            border-radius: 10px;
+            height: 90px;
+            font-size: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .cell:hover { background: rgba(0, 243, 255, 0.1); border-color: #00f3ff; }
+        .hidden { display: none !important; }
+        .stats { display: flex; justify-content: space-around; font-weight: bold; font-size: 18px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- بخش ورود و نام کاربری -->
+    <div id="login-section" class="card">
+        <h2>ورود به دنیای دوز</h2>
+        <p>نام کاربری خود را وارد کنید (ذخیره می‌شود):</p>
+        <input type="text" id="username-input" placeholder="مثلا: کیا_گیمر">
+        <br>
+        <button onclick="login()">ورود به بازی</button>
+    </div>
+
+    <!-- منوی اصلی و پروفایل -->
+    <div id="menu-section" class="card hidden">
+        <div class="stats">
+            <div>🪙 سکه: <span id="coins-val">40</span></div>
+            <div>🏆 کاپ: <span id="trophies-val">0</span></div>
+        </div>
+        <h3 id="welcome-user">سلام</h3>
+        <p>ورودی بازی: 10 سکه | جایزه برنده: 80 سکه</p>
+        <button onclick="findGame()">بازی آنلاین (دوز دو مرحله‌ای)</button>
+    </div>
+
+    <!-- صفحه جستجو / انتظار -->
+    <div id="waiting-section" class="card hidden">
+        <h2>در حال جستجوی حریف...</h2>
+        <p>اگر کسی آنلاین نبود، منتظر بمانید یا لغو کنید.</p>
+        <button onclick="cancelSearch()" style="background: #ff4757;">لغو جستجو</button>
+    </div>
+
+    <!-- صفحه بازی -->
+    <div id="game-section" class="card hidden">
+        <div id="round-info" style="color: #00f3ff; font-weight: bold;">دوز شماره ۱</div>
+        <div class="stats" style="margin-top: 10px;">
+            <span id="p1-name">شما</span> vs <span id="p2-name">حریف</span>
+        </div>
+        <div class="board" id="game-board">
+            <div class="cell" onclick="makeMove(0)"></div>
+            <div class="cell" onclick="makeMove(1)"></div>
+            <div class="cell" onclick="makeMove(2)"></div>
+            <div class="cell" onclick="makeMove(3)"></div>
+            <div class="cell" onclick="makeMove(4)"></div>
+            <div class="cell" onclick="makeMove(5)"></div>
+            <div class="cell" onclick="makeMove(6)"></div>
+            <div class="cell" onclick="makeMove(7)"></div>
+            <div class="cell" onclick="makeMove(8)"></div>
+        </div>
+        <div id="turn-indicator">نوبت شماست!</div>
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+    let currentRoomId = null;
+    let myTurn = false;
+
+    // بررسی لوکال استوریج برای ذخیره نام
+    window.onload = () => {
+        const savedName = localStorage.getItem('kiarash_tictactoe_username');
+        if (savedName) {
+            document.getElementById('username-input').value = savedName;
+        }
+    };
+
+    function login() {
+        const username = document.getElementById('username-input').value.trim();
+        if (!username) return alert('لطفا نام کاربری وارد کنید');
+        localStorage.setItem('kiarash_tictactoe_username', username);
+        socket.emit('login', username);
+    }
+
+    socket.on('init_data', (user) => {
+        document.getElementById('login-section').classList.add('hidden');
+        document.getElementById('menu-section').classList.remove('hidden');
+        document.getElementById('welcome-user').innerText = `خوش آمدی، ${user.username}`;
+        updateStatsUI(user);
+    });
+
+    function updateStatsUI(user) {
+        document.getElementById('coins-val').innerText = user.coins;
+        document.getElementById('trophies-val').innerText = user.trophies;
+    }
+
+    socket.on('update_stats', (user) => {
+        updateStatsUI(user);
+    });
+
+    socket.on('error_msg', (msg) => {
+        alert(msg);
+    });
+
+    function findGame() {
+        document.getElementById('menu-section').classList.add('hidden');
+        document.getElementById('waiting-section').classList.remove('hidden');
+        socket.emit('find_game');
+    }
+
+    function cancelSearch() {
+        socket.emit('cancel_search');
+    }
+
+    socket.on('search_cancelled', () => {
+        document.getElementById('waiting-section').classList.add('hidden');
+        document.getElementById('menu-section').classList.remove('hidden');
+    });
+
+    socket.on('waiting_for_opponent', () => {
+        // همچنان در صفحه انتظار می‌ماند تا حریف پیدا شود
+    });
+
+    socket.on('game_start', (data) => {
+        currentRoomId = data.roomId;
+        document.getElementById('waiting-section').classList.add('hidden');
+        document.getElementById('game-section').classList.remove('hidden');
+        
+        const playerIds = Object.keys(data.players);
+        document.getElementById('p1-name').innerText = data.players[socket.id];
+        const opponentId = playerIds.find(id => id !== socket.id);
+        document.getElementById('p2-name').innerText = data.players[opponentId];
+        
+        myTurn = (data.turn === socket.id);
+        document.getElementById('turn-indicator').innerText = myTurn ? 'نوبت شماست!' : 'نوبت حریف است...';
+    });
+
+    function makeMove(index) {
+        if (!myTurn) return;
+        socket.emit('make_move', { roomId: currentRoomId, index });
+    }
+
+    socket.on('update_board', (data) => {
+        const cells = document.getElementsByClassName('cell');
+        for (let i = 0; i < 9; i++) {
+            cells[i].innerText = data.board[i] || '';
+        }
+        myTurn = (data.turn === socket.id);
+        document.getElementById('turn-indicator').innerText = myTurn ? 'نوبت شماست!' : 'نوبت حریف است...';
+    });
+
+    socket.on('round_over', (data) => {
+        const cells = document.getElementsByClassName('cell');
+        for (let i = 0; i < 9; i++) {
+            cells[i].innerText = data.board[i] || '';
+        }
+        document.getElementById('round-info').innerText = `دوز شماره ${data.round} تمام شد! شروع راند بعدی...`;
+    });
+
+    socket.on('game_over', (data) => {
+        alert(`بازی تمام شد!\nبرنده: ${data.winner}`);
+        document.getElementById('game-section').classList.add('hidden');
+        document.getElementById('menu-section').classList.remove('hidden');
+        document.getElementById('round-info').innerText = 'دوز شماره ۱';
+        // پاکسازی تخته بازی
+        const cells = document.getElementsByClassName('cell');
+        for (let c of cells) c.innerText = '';
+    });
+</script>
+
+</body>
+</html>
