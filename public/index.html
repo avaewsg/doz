@@ -247,8 +247,8 @@
             <p>پلتفرم آنلاین و حرفه‌ای بازی دوز</p>
             <div class="input-group"><input type="text" id="username-input" placeholder="نام کاربری"></div>
             <div class="input-group"><input type="password" id="password-input" placeholder="رمز عبور"></div>
-            <button class="btn btn-primary" onclick="registerUser()">ثبت‌نام حساب جدید 📝</button>
-            <button class="btn btn-secondary" onclick="loginUser()">ورود به حساب موجود ⚡</button>
+            <button type="button" class="btn btn-primary" id="btn-register">ثبت‌نام حساب جدید 📝</button>
+            <button type="button" class="btn btn-secondary" id="btn-login">ورود به حساب موجود ⚡</button>
         </div>
     </div>
 
@@ -281,8 +281,8 @@
             <div class="dash-title">💬 چت عمومی آنلاین</div>
             <div class="global-chat-messages" id="global-chat-messages"></div>
             <div class="chat-input-row">
-                <input type="text" id="global-chat-input" placeholder="پیام خود را بنویسید..." onkeypress="checkChatEnter(event)">
-                <button class="btn btn-primary" onclick="sendGlobalChat()">ارسال</button>
+                <input type="text" id="global-chat-input" placeholder="پیام خود را بنویسید...">
+                <button type="button" class="btn btn-primary" id="btn-send-chat">ارسال</button>
             </div>
         </div>
 
@@ -290,15 +290,15 @@
             <div class="dash-card" style="gap: 10px;">
                 <div class="dash-title">⚔️ بخش آنلاین</div>
                 <p style="font-size: 11px; color: #94a3b8;">ورودی: ۱۰ سکه | جایزه: ۸۰ سکه</p>
-                <button class="btn btn-primary" style="margin:0;" onclick="findGame()">شروع نبرد آنلاین</button>
+                <button type="button" class="btn btn-primary" style="margin:0;" id="btn-find-game">شروع نبرد آنلاین</button>
             </div>
 
             <div class="dash-card" style="gap: 10px;">
                 <div class="dash-title">🤖 بازی با ربات (رایگان)</div>
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
-                    <button class="btn btn-bot-easy" style="padding: 10px; font-size: 13px;" onclick="startBotGame('easy')">آسان</button>
-                    <button class="btn btn-bot-med" style="padding: 10px; font-size: 13px;" onclick="startBotGame('medium')">متوسط</button>
-                    <button class="btn btn-bot-hard" style="padding: 10px; font-size: 13px;" onclick="startBotGame('hard')">سخت</button>
+                    <button type="button" class="btn btn-bot-easy" style="padding: 10px; font-size: 13px;" data-diff="easy">آسان</button>
+                    <button type="button" class="btn btn-bot-med" style="padding: 10px; font-size: 13px;" data-diff="medium">متوسط</button>
+                    <button type="button" class="btn btn-bot-hard" style="padding: 10px; font-size: 13px;" data-diff="hard">سخت</button>
                 </div>
             </div>
         </div>
@@ -308,7 +308,7 @@
         <div class="auth-card" style="text-align: center;">
             <h2 style="font-family:'Lalezar'; font-size: 24px; color: #00f3ff; margin-bottom: 12px;">در حال جستجوی حریف...</h2>
             <p style="margin-bottom: 20px;">لطفاً منتظر بمانید تا بازیکن دیگری وارد شود.</p>
-            <button class="btn btn-secondary" style="background: #ff4757; color:#fff; border:none;" onclick="cancelSearch()">لغو جستجو</button>
+            <button type="button" class="btn btn-secondary" style="background: #ff4757; color:#fff; border:none;" id="btn-cancel-search">لغو جستجو</button>
         </div>
     </div>
 
@@ -328,22 +328,22 @@
         <div class="timer-box" id="turn-timer">⏱️ زمان باقی‌مانده: ۳۰ ثانیه</div>
 
         <div class="board" id="game-board">
-            <div class="cell" onclick="makeMove(0)"></div><div class="cell" onclick="makeMove(1)"></div><div class="cell" onclick="makeMove(2)"></div>
-            <div class="cell" onclick="makeMove(3)"></div><div class="cell" onclick="makeMove(4)"></div><div class="cell" onclick="makeMove(5)"></div>
-            <div class="cell" onclick="makeMove(6)"></div><div class="cell" onclick="makeMove(7)"></div><div class="cell" onclick="makeMove(8)"></div>
+            <div class="cell" data-index="0"></div><div class="cell" data-index="1"></div><div class="cell" data-index="2"></div>
+            <div class="cell" data-index="3"></div><div class="cell" data-index="4"></div><div class="cell" data-index="5"></div>
+            <div class="cell" data-index="6"></div><div class="cell" data-index="7"></div><div class="cell" data-index="8"></div>
         </div>
 
-        <button class="btn btn-secondary" style="width: auto; padding: 8px 20px; background: #ff4757; color:#fff; margin-top: 10px;" onclick="confirmSurrender()">خروج / پذیرش باخت</button>
+        <button type="button" class="btn btn-secondary" style="width: auto; padding: 8px 20px; background: #ff4757; color:#fff; margin-top: 10px;" id="btn-surrender">خروج / پذیرش باخت</button>
     </div>
 
     <div id="bot-game-section" class="game-layout hidden">
         <h2 style="font-family:'Lalezar'; color: #2ed573; font-size: 22px; margin-bottom: 10px;">بازی با ربات هوشمند 🤖</h2>
         <div class="board" id="bot-game-board">
-            <div class="cell" onclick="makeBotMove(0)"></div><div class="cell" onclick="makeBotMove(1)"></div><div class="cell" onclick="makeBotMove(2)"></div>
-            <div class="cell" onclick="makeBotMove(3)"></div><div class="cell" onclick="makeBotMove(4)"></div><div class="cell" onclick="makeBotMove(5)"></div>
-            <div class="cell" onclick="makeBotMove(6)"></div><div class="cell" onclick="makeBotMove(7)"></div><div class="cell" onclick="makeBotMove(8)"></div>
+            <div class="cell" data-bot-index="0"></div><div class="cell" data-bot-index="1"></div><div class="cell" data-bot-index="2"></div>
+            <div class="cell" data-bot-index="3"></div><div class="cell" data-bot-index="4"></div><div class="cell" data-bot-index="5"></div>
+            <div class="cell" data-bot-index="6"></div><div class="cell" data-bot-index="7"></div><div class="cell" data-bot-index="8"></div>
         </div>
-        <button class="btn btn-secondary" style="width: auto; padding: 8px 20px; background: #ff4757; color:#fff; margin-top: 10px;" onclick="exitBotGame()">خروج از بازی</button>
+        <button type="button" class="btn btn-secondary" style="width: auto; padding: 8px 20px; background: #ff4757; color:#fff; margin-top: 10px;" id="btn-exit-bot">خروج از بازی</button>
     </div>
 </div>
 
@@ -351,7 +351,7 @@
     <div class="modal-content">
         <h3 style="font-family: 'Lalezar', cursive; color: #00f3ff; margin-bottom: 10px; font-size: 22px;">🎮 به DOZX خوش آمدید!</h3>
         <p style="font-size: 12px; line-height: 1.7; color: #cbd5e1; margin-bottom: 18px;">بازی آنلاین دوز با قابلیت انتخاب تصادفی نوبت، تایمر ۳۰ ثانیه‌ای هوشمند و جوایز خفن!</p>
-        <button class="btn btn-primary" style="background: #7000ff;" onclick="closeWelcomeModal()">ورود به داشبورد 🚀</button>
+        <button type="button" class="btn btn-primary" style="background: #7000ff;" id="btn-close-modal">ورود به داشبورد 🚀</button>
     </div>
 </div>
 
@@ -367,19 +367,20 @@
         alert(msg);
     });
 
-    function registerUser() {
+    // مدیریت امن رویدادهای دکمه‌ها از طریق addEventListener (بدون خطای اینلاین)
+    document.getElementById('btn-register').addEventListener('click', () => {
         const username = document.getElementById('username-input').value.trim();
         const password = document.getElementById('password-input').value.trim();
         if (!username || !password) return alert('لطفاً نام کاربری و رمز عبور را وارد کنید');
         socket.emit('register_user', { username, password });
-    }
+    });
 
-    function loginUser() {
+    document.getElementById('btn-login').addEventListener('click', () => {
         const username = document.getElementById('username-input').value.trim();
         const password = document.getElementById('password-input').value.trim();
         if (!username || !password) return alert('لطفاً نام کاربری و رمز عبور را وارد کنید');
         socket.emit('login_user', { username, password });
-    }
+    });
 
     socket.on('login_success', ({ user, isOwner }) => {
         document.getElementById('login-section').classList.add('hidden');
@@ -390,7 +391,10 @@
         document.getElementById('welcome-modal').classList.remove('hidden');
     });
 
-    function closeWelcomeModal() { document.getElementById('welcome-modal').classList.add('hidden'); }
+    document.getElementById('btn-close-modal').addEventListener('click', () => {
+        document.getElementById('welcome-modal').classList.add('hidden');
+    });
+
     function updateStatsUI(user) {
         document.getElementById('coins-val').innerText = user.coins;
         document.getElementById('trophies-val').innerText = user.trophies;
@@ -419,9 +423,10 @@
         input.value = '';
     }
 
-    function checkChatEnter(e) {
+    document.getElementById('btn-send-chat').addEventListener('click', sendGlobalChat);
+    document.getElementById('global-chat-input').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendGlobalChat();
-    }
+    });
 
     socket.on('init_global_chat', (msgs) => {
         const chatBox = document.getElementById('global-chat-messages');
@@ -444,12 +449,16 @@
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    function findGame() {
+    document.getElementById('btn-find-game').addEventListener('click', () => {
         document.getElementById('dashboard-section').classList.add('hidden');
         document.getElementById('waiting-section').classList.remove('hidden');
         socket.emit('find_game');
-    }
-    function cancelSearch() { socket.emit('cancel_search'); }
+    });
+
+    document.getElementById('btn-cancel-search').addEventListener('click', () => {
+        socket.emit('cancel_search');
+    });
+
     socket.on('search_cancelled', () => {
         document.getElementById('waiting-section').classList.add('hidden');
         document.getElementById('dashboard-section').classList.remove('hidden');
@@ -471,9 +480,13 @@
         renderBoard(Array(9).fill(null), d.turn);
     });
 
-    function makeMove(i) {
-        socket.emit('make_move', { roomId: currentRoomId, index: i });
-    }
+    // سلول‌های بازی آنلاین
+    document.querySelectorAll('#game-board .cell').forEach(cell => {
+        cell.addEventListener('click', () => {
+            const index = parseInt(cell.getAttribute('data-index'));
+            socket.emit('make_move', { roomId: currentRoomId, index });
+        });
+    });
 
     socket.on('update_board', (d) => {
         renderBoard(d.board, d.turn);
@@ -526,26 +539,46 @@
         }, 200);
     });
 
-    function confirmSurrender() {
-        if (confirm('تایید خروج و پذیرش باخت؟')) socket.emit('surrender_game', { roomId: currentRoomId });
-    }
+    document.getElementById('btn-surrender').addEventListener('click', () => {
+        if (confirm('تایید خروج و پذیرش باخت؟')) {
+            socket.emit('surrender_game', { roomId: currentRoomId });
+        }
+    });
 
-    function startBotGame(diff) {
-        document.getElementById('dashboard-section').classList.add('hidden');
-        document.getElementById('bot-game-section').classList.remove('hidden');
-        socket.emit('start_bot_game', { difficulty: diff });
-    }
-    function exitBotGame() {
+    // دکمه‌های ربات
+    document.querySelectorAll('[data-diff]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const diff = btn.getAttribute('data-diff');
+            document.getElementById('dashboard-section').classList.add('hidden');
+            document.getElementById('bot-game-section').classList.remove('hidden');
+            socket.emit('start_bot_game', { difficulty: diff });
+        });
+    });
+
+    document.getElementById('btn-exit-bot').addEventListener('click', () => {
         document.getElementById('bot-game-section').classList.add('hidden');
         document.getElementById('dashboard-section').classList.remove('hidden');
-    }
+    });
+
     socket.on('bot_game_start', (d) => renderBotBoard(d.board));
-    function makeBotMove(i) { socket.emit('make_bot_move', { index: i }); }
+
+    document.querySelectorAll('#bot-game-board .cell').forEach(cell => {
+        cell.addEventListener('click', () => {
+            const index = parseInt(cell.getAttribute('data-bot-index'));
+            socket.emit('make_bot_move', { index });
+        });
+    });
+
     socket.on('bot_game_update', (d) => renderBotBoard(d.board));
     socket.on('bot_game_over', (d) => {
         renderBotBoard(d.board);
-        setTimeout(() => { alert(d.resultText); exitBotGame(); }, 200);
+        setTimeout(() => {
+            alert(d.resultText);
+            document.getElementById('bot-game-section').classList.add('hidden');
+            document.getElementById('dashboard-section').classList.remove('hidden');
+        }, 200);
     });
+
     function renderBotBoard(board) {
         const cells = document.querySelectorAll('#bot-game-board .cell');
         for (let i = 0; i < 9; i++) {
