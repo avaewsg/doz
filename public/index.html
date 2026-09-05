@@ -283,10 +283,7 @@
 
         @media (max-width: 1024px) {
             .app-container { height: auto; min-height: 100vh; padding: 10px; }
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-                gap: 12px;
-            }
+            .dashboard-grid { grid-template-columns: 1fr; gap: 12px; }
             .center-chat-area { height: 350px; }
             .top-left-profile { flex-direction: column; gap: 10px; align-items: stretch; text-align: center; }
             .user-welcome-box { justify-content: center; }
@@ -373,14 +370,12 @@
         </div>
     </div>
 
-    <!-- ۴. صفحه بازی آنلاین با قابلیت اسکوربورد ۳ دست و نوبت دقیق -->
+    <!-- ۴. صفحه بازی آنلاین -->
     <div id="game-section" class="game-layout hidden">
-        <!-- نمایش امتیاز چند چند و راند جاری -->
         <div id="scoreboard-header" style="background: rgba(12,12,24,0.8); border: 1px solid rgba(0,243,255,0.3); padding: 8px 20px; border-radius: 16px; font-family:'Lalezar'; font-size: 18px; margin-bottom: 10px; display: flex; gap: 15px; align-items: center;">
             <span id="match-score-text" style="color: #ffeb3b;">امتیاز: ۰ - ۰</span> | <span id="round-text" style="color: #00f3ff;">راند ۱ از ۳</span>
         </div>
 
-        <!-- نمایش اسامی به همراه علامت ضربدر (X) و دایره (O) -->
         <div style="display: flex; gap: 20px; font-family:'Lalezar'; font-size: 18px; margin-bottom: 10px;">
             <span style="color: #00f3ff;" id="p1-name">شما (X)</span> VS <span style="color: #ff007f;" id="p2-name">حریف (O)</span>
         </div>
@@ -391,7 +386,6 @@
             <div class="cell" onclick="makeMove(6)"></div><div class="cell" onclick="makeMove(7)"></div><div class="cell" onclick="makeMove(8)"></div>
         </div>
 
-        <!-- نمایش حرفه‌ای نوبت با نام بازیکن -->
         <div id="turn-indicator" style="font-family: 'Lalezar'; font-size: 20px; color: #ffeb3b; margin-bottom: 12px; text-shadow: 0 0 10px rgba(255,235,59,0.4);">نوبت: </div>
         <button class="btn btn-secondary" style="width: auto; padding: 8px 20px; background: #ff4757; color:#fff;" onclick="confirmSurrender()">خروج / پذیرش باخت</button>
     </div>
@@ -409,7 +403,6 @@
     </div>
 </div>
 
-<!-- مودال خوش‌آمدگویی -->
 <div id="welcome-modal" class="modal hidden">
     <div class="modal-content">
         <h3 style="font-family: 'Lalezar', cursive; color: #00f3ff; margin-bottom: 10px; font-size: 22px;">🎮 به DOZX خوش آمدید!</h3>
@@ -596,7 +589,7 @@
         document.getElementById('dashboard-section').classList.remove('hidden');
     });
 
-    // شروع بازی آنلاین و تنظیم اسامی همراه با علامت X و O
+    // شروع بازی آنلاین با ریست کامل اطلاعات قبلی
     socket.on('game_start', (d) => {
         currentRoomId = d.roomId;
         matchPlayersInfo = d.players;
@@ -609,7 +602,8 @@
         document.getElementById('p1-name').innerText = `${d.players[p1Id]} (X)`;
         document.getElementById('p2-name').innerText = `${d.players[p2Id]} (O)`;
         
-        updateGameUIState(d.board, d.turnName, d.scores, 1);
+        // پاکسازی تخته و بازنشانی راند به ۱
+        updateGameUIState(d.board, d.turnName, d.scores, d.round || 1);
     });
 
     socket.on('update_board', (d) => {
@@ -630,6 +624,8 @@
         updateScoreboard(d.scores);
         setTimeout(() => {
             alert(d.isDraw ? '🤝 مساوی کل مسابقه!' : `🏆 برنده نهایی مسابقه: ${d.winnerName}`);
+            currentRoomId = null; // ریست شناسه اتاق برای جلوگیری از تداخل در بازی بعدی
+            matchPlayersInfo = {};
             document.getElementById('game-section').classList.add('hidden');
             document.getElementById('dashboard-section').classList.remove('hidden');
         }, 300);
@@ -655,10 +651,16 @@
         }
     }
 
-    function makeMove(i) { socket.emit('make_move', { roomId: currentRoomId, index: i }); }
+    function makeMove(i) { 
+        if (!currentRoomId) return;
+        socket.emit('make_move', { roomId: currentRoomId, index: i }); 
+    }
 
     function confirmSurrender() {
-        if (confirm('تایید خروج و باخت؟')) socket.emit('surrender_game', { roomId: currentRoomId });
+        if (confirm('تایید خروج و باخت؟')) {
+            socket.emit('surrender_game', { roomId: currentRoomId });
+            currentRoomId = null;
+        }
     }
     
     function renderBoard(board) {
