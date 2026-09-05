@@ -16,7 +16,6 @@ const DB_FILE = path.join(DATA_DIR, 'database.json');
 
 let db = { users: {} };
 
-// بارگذاری پایگاه داده از روی دیسک
 if (fs.existsSync(DB_FILE)) {
     try {
         db = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
@@ -27,7 +26,6 @@ if (fs.existsSync(DB_FILE)) {
 
 function saveDB() {
     try {
-        // اگر پوشه /data وجود نداشت (حالت لوکال)، مشکلی نیست ولی روی رایلی پوشه وجود دارد
         fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
     } catch (e) {
         console.log('خطا در ذخیره دیتابیس:', e);
@@ -40,35 +38,60 @@ const activeGames = {};
 io.on('connection', (socket) => {
     console.log('کاربر متصل شد:', socket.id);
 
-    socket.on('auth', ({ username, password }) => {
+    // ثبت‌نام کاربر جدید
+    socket.on('register', ({ username, password }) => {
         username = username.trim();
         if (!username || !password) {
             return socket.emit('error_msg', 'لطفاً نام کاربری و رمز عبور را وارد کنید');
         }
 
-        if (username === 'Kiarash') {
-            if (password !== 'kia12') {
-                return socket.emit('error_msg', 'رمز عبور مالک اشتباه است!');
-            }
+        if (db.users[username]) {
+            return socket.emit('error_msg', 'این نام کاربری قبلاً ثبت شده است! لطفاً وارد شوید.');
         }
 
-        if (db.users[username]) {
-            if (db.users[username].password !== password) {
-                return socket.emit('error_msg', 'رمز عبور اشتباه است!');
-            }
-            db.users[username].socketId = socket.id;
-        } else {
-            db.users[username] = {
-                username,
-                password,
-                coins: 40,
-                trophies: 0,
-                isOwner: (username === 'Kiarash'),
-                socketId: socket.id
-            };
+        // بررسی نام مالک
+        if (username === 'Kiarash' && password !== 'kia12') {
+            return socket.emit('error_msg', 'رمز عبور اکانت رسمی مالک اشتباه است!');
         }
+
+        db.users[username] = {
+            username,
+            password,
+            coins: 40,
+            trophies: 0,
+            isOwner: (username === 'Kiarash'),
+            socketId: socket.id
+        };
 
         saveDB();
+        socket.data.username = username;
+        socket.emit('init_data', getPublicUserData(db.users[username]), db.users[username].isOwner);
+        broadcastLeaderboard();
+        broadcastUserList();
+    });
+
+    // ورود به اکانت موجود
+    socket.on('login', ({ username, password }) => {
+        username = username.trim();
+        if (!username || !password) {
+            return socket.emit('error_msg', 'لطفاً نام کاربری و رمز عبور را وارد کنید');
+        }
+
+        if (!db.users[username]) {
+            return socket.emit('error_msg', 'این نام کاربری وجود ندارد! ابتدا ثبت‌نام کنید.');
+        }
+
+        if (db.users[username].password !== password) {
+            return socket.emit('error_msg', 'رمز عبور اشتباه است!');
+        }
+
+        if (username === 'Kiarash') {
+            db.users[username].isOwner = true;
+        }
+
+        db.users[username].socketId = socket.id;
+        saveDB();
+
         socket.data.username = username;
         socket.emit('init_data', getPublicUserData(db.users[username]), db.users[username].isOwner);
         broadcastLeaderboard();
@@ -188,7 +211,7 @@ io.on('connection', (socket) => {
                 broadcastLeaderboard();
                 delete activeGames[roomId];
             } else {
-                // مساوی شدن و برگشت سکه‌ها
+                // مساوی شدن: برگشت سکه‌ها و بدون تغییر کاپ
                 const user1 = db.users[u1];
                 const user2 = db.users[u2];
 
