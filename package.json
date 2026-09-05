@@ -1,7 +1,6 @@
 {
-  "name": "tic-tac-toe-online",
+  "name": "tic-tac-toe-neon",
   "version": "1.0.0",
-  "description": "Online Tic Tac Toe with Railway",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
