@@ -34,6 +34,7 @@
             justify-content: center;
         }
 
+        /* صفحه ورود */
         .login-wrapper {
             display: flex;
             justify-content: center;
@@ -116,6 +117,7 @@
             color: #cbd5e1;
         }
 
+        /* داشبورد ریسپانسیو */
         .dashboard-grid {
             display: grid;
             grid-template-columns: 300px 1fr 320px;
@@ -298,7 +300,6 @@
 <body>
 
 <div class="app-container">
-    <!-- ۱. صفحه ورود -->
     <div id="login-section" class="login-wrapper">
         <div class="auth-card">
             <h1>DOZX</h1>
@@ -310,7 +311,6 @@
         </div>
     </div>
 
-    <!-- ۲. داشبورد اصلی ریسپانسیو -->
     <div id="dashboard-section" class="dashboard-grid hidden">
         <div class="top-left-profile">
             <div class="user-welcome-box">
@@ -341,14 +341,14 @@
             <div class="dash-title">💬 چت عمومی آنلاین</div>
             <div class="global-chat-messages" id="global-chat-messages"></div>
             <div class="chat-input-row">
-                <input type="text" id="global-chat-input" placeholder="پیام خود را بنویسید...">
+                <input type="text" id="global-chat-input" placeholder="پیام خود را بنویسید..." onkeypress="if(event.key === 'Enter') sendGlobalChat()">
                 <button class="btn btn-primary" onclick="sendGlobalChat()">ارسال</button>
             </div>
         </div>
 
         <div class="right-sidebar">
             <div class="dash-card" style="gap: 10px;">
-                <div class="dash-title">⚔️ بخش آنلاین (۳ برد از ۵)</div>
+                <div class="dash-title">⚔️ بخش آنلاین</div>
                 <p style="font-size: 11px; color: #94a3b8;">ورودی: ۱۰ سکه | جایزه: ۸۰ سکه</p>
                 <button class="btn btn-primary" style="margin:0;" onclick="findGame()">شروع نبرد آنلاین</button>
             </div>
@@ -364,7 +364,6 @@
         </div>
     </div>
 
-    <!-- ۳. صفحه انتظار آنلاین -->
     <div id="waiting-section" class="login-wrapper hidden">
         <div class="auth-card" style="text-align: center;">
             <h2 style="font-family:'Lalezar'; font-size: 24px; color: #00f3ff; margin-bottom: 12px;">در حال جستجوی حریف...</h2>
@@ -373,31 +372,19 @@
         </div>
     </div>
 
-    <!-- ۴. صفحه بازی آنلاین با نمایش امتیاز و علامت بالا اسم -->
     <div id="game-section" class="game-layout hidden">
-        <div style="display: flex; gap: 30px; font-family:'Lalezar'; font-size: 18px; margin-bottom: 5px; text-align: center;">
-            <div>
-                <span style="color: #00f3ff;" id="p1-name">شما</span> <span id="p1-symbol" style="font-size: 20px;"></span><br>
-                <span style="font-size: 14px; color: #ffeb3b;">بردها: <span id="p1-score">0</span></span>
-            </div>
-            <span style="color: #64748b; align-self: center;">VS</span>
-            <div>
-                <span style="color: #ff007f;" id="p2-name">حریف</span> <span id="p2-symbol" style="font-size: 20px;"></span><br>
-                <span style="font-size: 14px; color: #ffeb3b;">بردها: <span id="p2-score">0</span></span>
-            </div>
+        <div style="display: flex; gap: 20px; font-family:'Lalezar'; font-size: 16px; margin-bottom: 5px;">
+            <span style="color: #00f3ff;" id="p1-name">شما</span> VS <span style="color: #ff007f;" id="p2-name">حریف</span>
         </div>
-
         <div class="board" id="game-board">
             <div class="cell" onclick="makeMove(0)"></div><div class="cell" onclick="makeMove(1)"></div><div class="cell" onclick="makeMove(2)"></div>
             <div class="cell" onclick="makeMove(3)"></div><div class="cell" onclick="makeMove(4)"></div><div class="cell" onclick="makeMove(5)"></div>
             <div class="cell" onclick="makeMove(6)"></div><div class="cell" onclick="makeMove(7)"></div><div class="cell" onclick="makeMove(8)"></div>
         </div>
-
-        <div id="turn-indicator" style="font-family: 'Lalezar'; font-size: 18px; color: #ffeb3b; margin-bottom: 10px;">نوبت شماست! (تایمر: <span id="timer-val">30</span>ثانیه)</div>
+        <div id="turn-indicator" style="font-family: 'Lalezar'; font-size: 18px; color: #ffeb3b; margin-bottom: 10px;">نوبت شماست!</div>
         <button class="btn btn-secondary" style="width: auto; padding: 8px 20px; background: #ff4757; color:#fff;" onclick="confirmSurrender()">خروج / پذیرش باخت</button>
     </div>
 
-    <!-- ۵. صفحه بازی با ربات -->
     <div id="bot-game-section" class="game-layout hidden">
         <h2 style="font-family:'Lalezar'; color: #2ed573; font-size: 22px; margin-bottom: 5px;">بازی با ربات هوشمند 🤖</h2>
         <div class="board" id="bot-game-board">
@@ -430,19 +417,24 @@
 <script>
     const socket = io();
     let currentRoomId = null;
-    let turnInterval = null;
 
     function registerUser() {
-        const username = document.getElementById('username-input').value.trim();
-        const password = document.getElementById('password-input').value.trim();
-        if (!username || !password) return alert('لطفاً نام کاربری و رمز عبور را وارد کنید');
+        const username = document.getElementById('username-input').value;
+        const password = document.getElementById('password-input').value;
+        if (!username || !password) {
+            alert('لطفاً نام کاربری و رمز عبور را وارد کنید');
+            return;
+        }
         socket.emit('register', { username, password });
     }
 
     function loginUser() {
-        const username = document.getElementById('username-input').value.trim();
-        const password = document.getElementById('password-input').value.trim();
-        if (!username || !password) return alert('لطفاً نام کاربری و رمز عبور را وارد کنید');
+        const username = document.getElementById('username-input').value;
+        const password = document.getElementById('password-input').value;
+        if (!username || !password) {
+            alert('لطفاً نام کاربری و رمز عبور را وارد کنید');
+            return;
+        }
         socket.emit('login', { username, password });
     }
 
@@ -451,16 +443,24 @@
         document.getElementById('dashboard-section').classList.remove('hidden');
         document.getElementById('welcome-user').innerText = user.username;
         document.getElementById('user-initial').innerText = user.username.charAt(0).toUpperCase();
-        if (isOwner) document.getElementById('admin-panel-btn').classList.remove('hidden');
+        if (isOwner) {
+            document.getElementById('admin-panel-btn').classList.remove('hidden');
+        } else {
+            document.getElementById('admin-panel-btn').classList.add('hidden');
+        }
         updateStatsUI(user);
         document.getElementById('welcome-modal').classList.remove('hidden');
     });
 
-    function closeWelcomeModal() { document.getElementById('welcome-modal').classList.add('hidden'); }
+    function closeWelcomeModal() { 
+        document.getElementById('welcome-modal').classList.add('hidden'); 
+    }
+
     function updateStatsUI(user) {
         document.getElementById('coins-val').innerText = user.coins;
         document.getElementById('trophies-val').innerText = user.trophies;
     }
+    
     socket.on('update_stats', (user) => updateStatsUI(user));
 
     socket.on('update_leaderboard', (topPlayers) => {
@@ -496,7 +496,10 @@
             listDiv.appendChild(row);
         });
     }
-    function closeAdminPanel() { document.getElementById('admin-modal').classList.add('hidden'); }
+    
+    function closeAdminPanel() { 
+        document.getElementById('admin-modal').classList.add('hidden'); 
+    }
 
     function changeUserCoins(targetUsername) {
         const newCoins = prompt(`مقدار سکه جدید برای ${targetUsername}:`);
@@ -520,6 +523,7 @@
         chatBox.innerHTML = '';
         msgs.forEach(m => appendGlobalMsg(m));
     });
+    
     socket.on('receive_global_chat', (m) => appendGlobalMsg(m));
 
     function appendGlobalMsg(m) {
@@ -541,10 +545,12 @@
         document.getElementById('bot-game-section').classList.remove('hidden');
         socket.emit('start_bot_game', { difficulty: diff });
     }
+    
     function exitBotGame() {
         document.getElementById('bot-game-section').classList.add('hidden');
         document.getElementById('dashboard-section').classList.remove('hidden');
     }
+    
     socket.on('bot_game_start', (d) => renderBotBoard(d.board));
     function makeBotMove(i) { socket.emit('make_bot_move', { index: i }); }
     socket.on('bot_game_update', (d) => renderBotBoard(d.board));
@@ -552,6 +558,7 @@
         renderBotBoard(d.board);
         setTimeout(() => { alert(d.resultText); exitBotGame(); }, 200);
     });
+    
     function renderBotBoard(board) {
         const cells = document.querySelectorAll('#bot-game-board .cell');
         for (let i = 0; i < 9; i++) {
@@ -567,7 +574,9 @@
         document.getElementById('waiting-section').classList.remove('hidden');
         socket.emit('find_game');
     }
+    
     function cancelSearch() { socket.emit('cancel_search'); }
+    
     socket.on('search_cancelled', () => {
         document.getElementById('waiting-section').classList.add('hidden');
         document.getElementById('dashboard-section').classList.remove('hidden');
@@ -577,94 +586,27 @@
         currentRoomId = d.roomId;
         document.getElementById('waiting-section').classList.add('hidden');
         document.getElementById('game-section').classList.remove('hidden');
-        
-        const socketId = socket.id;
-        const playerIds = Object.keys(d.players);
-        const oppId = playerIds.find(id => id !== socketId);
-
-        document.getElementById('p1-name').innerText = d.players[socketId];
+        document.getElementById('p1-name').innerText = d.players[socket.id];
+        const oppId = Object.keys(d.players).find(id => id !== socket.id);
         document.getElementById('p2-name').innerText = d.players[oppId];
-
-        // نمایش علامت (دایره ⭕ یا ضربدر ❌) بالای اسم بازیکنان
-        const mySym = d.symbols[socketId];
-        const oppSym = d.symbols[oppId];
-        document.getElementById('p1-symbol').innerText = mySym === 'X' ? '❌' : '⭕';
-        document.getElementById('p2-symbol').innerText = oppSym === 'X' ? '❌' : '⭕';
-
-        updateScoresUI(d.scores, socketId, oppId);
         renderBoard(Array(9).fill(null));
-        startClientTimer();
     });
 
-    socket.on('update_board', (d) => {
+    function makeMove(i) { socket.emit('make_move', { roomId: currentRoomId, index: i }); }
+    socket.on('update_board', (d) => renderBoard(d.board));
+    socket.on('game_over', (d) => {
         renderBoard(d.board);
-        resetClientTimer();
-    });
-
-    socket.on('round_over', (d) => {
-        renderBoard(d.board);
-        if (turnInterval) clearInterval(turnInterval);
-        const socketId = socket.id;
-        const oppId = Object.keys(d.scores).find(id => id !== socketId);
-        updateScoresUI(d.scores, socketId, oppId);
-        alert(`نتیجه این دست: ${d.roundWinner}\nدست بعدی شروع می‌شود...`);
-    });
-
-    socket.on('next_round', (d) => {
-        renderBoard(d.board);
-        const socketId = socket.id;
-        const oppId = Object.keys(d.scores).find(id => id !== socketId);
-        updateScoresUI(d.scores, socketId, oppId);
-        startClientTimer();
-    });
-
-    socket.on('match_over', (d) => {
-        renderBoard(d.board);
-        if (turnInterval) clearInterval(turnInterval);
         setTimeout(() => {
-            alert(`🏆 برنده نهایی مسابقه: ${d.winnerName}`);
+            alert(d.isDraw ? '🤝 مساوی!' : `🏆 برنده: ${d.winnerName}`);
             document.getElementById('game-section').classList.add('hidden');
             document.getElementById('dashboard-section').classList.remove('hidden');
         }, 200);
     });
-
-    socket.on('chat_system_alert', (msg) => {
-        console.log(msg);
-    });
-
-    function updateScoresUI(scores, myId, oppId) {
-        document.getElementById('p1-score').innerText = scores[myId] || 0;
-        document.getElementById('p2-score').innerText = scores[oppId] || 0;
-    }
-
-    function startClientTimer() {
-        if (turnInterval) clearInterval(turnInterval);
-        let timeLeft = 30;
-        document.getElementById('timer-val').innerText = timeLeft;
-        turnInterval = setInterval(() => {
-            timeLeft--;
-            if (timeLeft >= 0) {
-                document.getElementById('timer-val').innerText = timeLeft;
-            }
-            if (timeLeft <= 0) {
-                clearInterval(turnInterval);
-            }
-        }, 1000);
-    }
-
-    function resetClientTimer() {
-        startClientTimer();
-    }
-
-    function makeMove(i) { socket.emit('make_move', { roomId: currentRoomId, index: i }); }
     
     function confirmSurrender() {
-        if (confirm('تایید خروج و باخت؟')) {
-            if (turnInterval) clearInterval(turnInterval);
-            socket.emit('surrender_game', { roomId: currentRoomId });
-        }
+        if (confirm('تایید خروج و باخت؟')) socket.emit('surrender_game', { roomId: currentRoomId });
     }
-
+    
     function renderBoard(board) {
         const cells = document.querySelectorAll('#game-board .cell');
         for (let i = 0; i < 9; i++) {
