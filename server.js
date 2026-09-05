@@ -22,9 +22,13 @@ users['kiarash'] = { username: 'کیارش', password: '123', coins: 1000, troph
 io.on('connection', (socket) => {
     let currentUser = null;
 
-    socket.on('register', ({ username, password }) => {
-        if (!username || !password) return socket.emit('error_msg', 'لطفاً تمام فیلدها را پر کنید');
-        if (users[username]) return socket.emit('error_msg', 'این نام کاربری قبلاً ثبت‌نام کرده است');
+    socket.on('register_user', ({ username, password }) => {
+        if (!username || !password) {
+            return socket.emit('error_msg', 'لطفاً تمام فیلدها را پر کنید');
+        }
+        if (users[username]) {
+            return socket.emit('error_msg', 'این نام کاربری قبلاً ثبت‌نام کرده است');
+        }
 
         users[username] = {
             username,
@@ -36,20 +40,20 @@ io.on('connection', (socket) => {
         currentUser = username;
         socket.data.username = username;
 
-        socket.emit('init_data', users[username], users[username].isOwner);
+        socket.emit('login_success', { user: users[username], isOwner: users[username].isOwner });
         broadcastLeaderboard();
         broadcastUserList();
         socket.emit('init_global_chat', globalChat);
     });
 
-    socket.on('login', ({ username, password }) => {
+    socket.on('login_user', ({ username, password }) => {
         if (!users[username] || users[username].password !== password) {
             return socket.emit('error_msg', 'نام کاربری یا رمز عبور اشتباه است');
         }
         currentUser = username;
         socket.data.username = username;
 
-        socket.emit('init_data', users[username], users[username].isOwner);
+        socket.emit('login_success', { user: users[username], isOwner: users[username].isOwner });
         broadcastLeaderboard();
         broadcastUserList();
         socket.emit('init_global_chat', globalChat);
@@ -57,7 +61,7 @@ io.on('connection', (socket) => {
 
     // چت عمومی
     socket.on('send_global_chat', (message) => {
-        if (!currentUser) return;
+        if (!currentUser || !users[currentUser]) return;
         const msgData = {
             username: currentUser,
             message,
@@ -68,38 +72,25 @@ io.on('connection', (socket) => {
         io.emit('receive_global_chat', msgData);
     });
 
-    // مدیریت پنل ادمین
-    socket.on('admin_set_coins', ({ targetUsername, newCoins }) => {
-        if (!currentUser || !users[currentUser].isOwner) return;
-        if (users[targetUsername]) {
-            users[targetUsername].coins = newCoins;
-            io.emit('update_stats_if_online', targetUsername);
-            broadcastLeaderboard();
-            broadcastUserList();
-        }
-    });
-
     // جستجوی حریف آنلاین
     socket.on('find_game', () => {
-        if (!currentUser) return;
+        if (!currentUser || !users[currentUser]) return;
         if (users[currentUser].coins < 10) {
             return socket.emit('error_msg', 'سکه شما برای ورود به نبرد کافی نیست! (حداقل ۱۰ سکه)');
         }
 
         if (waitingPlayer && waitingPlayer.socketId !== socket.id) {
-            // حریف پیدا شد! ساخت اتاق جدید
             const roomId = 'room_' + Date.now();
             const p1 = waitingPlayer;
             const p2 = { socketId: socket.id, username: currentUser };
             waitingPlayer = null;
 
-            // کسر هزینه ورود
             users[p1.username].coins -= 10;
             users[p2.username].coins -= 10;
+            
             io.to(p1.socketId).emit('update_stats', users[p1.username]);
-            io.emit('update_stats', users[p2.username]);
+            io.to(p2.socketId).emit('update_stats', users[p2.username]);
 
-            // تعیین تصادفی نوبت اول و علامت‌ها (X و O)
             const playerIds = [p1.socketId, p2.socketId];
             const firstPlayerId = playerIds[Math.random() < 0.5 ? 0 : 1];
             const secondPlayerId = playerIds.find(id => id !== firstPlayerId);
@@ -157,14 +148,13 @@ io.on('connection', (socket) => {
         const symbol = room.symbols[socket.id];
         room.board[index] = symbol;
 
-        // بررسی برد یا مساوی
         if (checkWin(room.board, symbol)) {
             clearRoomTimer(roomId);
             const winnerSocketId = socket.id;
             const loserSocketId = Object.keys(room.players).find(id => id !== winnerSocketId);
             const winnerName = room.players[winnerSocketId];
             
-            users[winnerName].coins += 80; // جایزه
+            users[winnerName].coins += 80;
             users[winnerName].trophies += 5;
 
             io.to(roomId).emit('game_over', {
@@ -174,6 +164,9 @@ io.on('connection', (socket) => {
             });
 
             updateUserStatsDirect(winnerSocketId, users[winnerName]);
+            if (users[room.players[loserSocketId]]) {
+                updateUserStatsDirect(loserSocketId, users[room.players[loserSocketId]]);
+            }
             delete activeRooms[roomId];
             broadcastLeaderboard();
             return;
@@ -190,7 +183,6 @@ io.on('connection', (socket) => {
             return;
         }
 
-        // تغییر نوبت
         const playerIds = Object.keys(room.players);
         room.turn = playerIds.find(id => id !== room.turn);
 
@@ -202,7 +194,6 @@ io.on('connection', (socket) => {
         startTurnTimer(roomId);
     });
 
-    // خروج یا باخت
     socket.on('surrender_game', ({ roomId }) => {
         handleGameOverBySurrender(roomId, socket.id);
     });
@@ -211,10 +202,9 @@ io.on('connection', (socket) => {
         if (waitingPlayer && waitingPlayer.socketId === socket.id) {
             waitingPlayer = null;
         }
-        // بررسی قطع ارتباط در روم بازی
         for (const roomId in activeRooms) {
             const room = activeRooms[roomId];
-            if (room.players[socket.id]) {
+            if (room && room.players && room.players[socket.id]) {
                 handleGameOverBySurrender(roomId, socket.id);
                 break;
             }
@@ -226,7 +216,7 @@ io.on('connection', (socket) => {
     socket.on('start_bot_game', ({ difficulty }) => {
         botGame = {
             board: Array(9).fill(null),
-            turn: 'X', // کاربر X و ربات O
+            turn: 'X',
             difficulty
         };
         socket.emit('bot_game_start', { board: botGame.board });
@@ -243,7 +233,6 @@ io.on('connection', (socket) => {
             return socket.emit('bot_game_over', { board: botGame.board, resultText: '🤝 بازی مساوی شد!' });
         }
 
-        // حرکت ربات
         botGame.turn = 'O';
         setTimeout(() => {
             const botIdx = getBotMove(botGame.board, botGame.difficulty);
@@ -262,14 +251,12 @@ io.on('connection', (socket) => {
     });
 });
 
-// مدیریت تایمر ۳۰ ثانیه‌ای هر نوبت
 function startTurnTimer(roomId) {
     clearRoomTimer(roomId);
     gameTimers[roomId] = setTimeout(() => {
         const room = activeRooms[roomId];
         if (!room) return;
 
-        // زمان تمام شد! انتخاب خودکار اولین خانه خالی برای بازیکنی که نوبتش بوده
         const emptyIndexes = room.board.map((val, idx) => val === null ? idx : null).filter(val => val !== null);
         if (emptyIndexes.length > 0) {
             const randomIdx = emptyIndexes[Math.floor(Math.random() * emptyIndexes.length)];
@@ -300,7 +287,6 @@ function startTurnTimer(roomId) {
                 return;
             }
 
-            // تغییر نوبت
             const playerIds = Object.keys(room.players);
             room.turn = playerIds.find(id => id !== room.turn);
 
@@ -311,7 +297,7 @@ function startTurnTimer(roomId) {
 
             startTurnTimer(roomId);
         }
-    }, 30000); // 30 ثانیه
+    }, 30000);
 }
 
 function clearRoomTimer(roomId) {
@@ -355,8 +341,6 @@ function checkWin(b, s) {
 function getBotMove(board, diff) {
     const empty = board.map((v, i) => v === null ? i : null).filter(v => v !== null);
     if (empty.length === 0) return -1;
-    if (diff === 'easy') return empty[Math.floor(Math.random() * empty.length)];
-    // متوسط و سخت
     return empty[Math.floor(Math.random() * empty.length)];
 }
 
@@ -373,6 +357,7 @@ function updateUserStatsDirect(socketId, userObj) {
     io.to(socketId).emit('update_stats', userObj);
 }
 
-server.listen(3000, () => {
-    console.log('Server is running on port 3000');
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });
