@@ -245,8 +245,8 @@
         <div class="auth-card">
             <h1>DOZX</h1>
             <p>پلتفرم آنلاین و حرفه‌ای بازی دوز</p>
-            <div class="input-group"><input type="text" id="username-input" placeholder="نام کاربری"></div>
-            <div class="input-group"><input type="password" id="password-input" placeholder="رمز عبور"></div>
+            <div class="input-group"><input type="text" id="username-input" placeholder="نام کاربری" autocomplete="off"></div>
+            <div class="input-group"><input type="password" id="password-input" placeholder="رمز عبور" autocomplete="off"></div>
             <button type="button" class="btn btn-primary" id="btn-register">ثبت‌نام حساب جدید 📝</button>
             <button type="button" class="btn btn-secondary" id="btn-login">ورود به حساب موجود ⚡</button>
         </div>
@@ -367,19 +367,34 @@
         alert(msg);
     });
 
-    // مدیریت امن رویدادهای دکمه‌ها از طریق addEventListener (بدون خطای اینلاین)
-    document.getElementById('btn-register').addEventListener('click', () => {
+    // اصلاح کامل رویداد دکمه‌های ثبت‌نام و ورود
+    document.getElementById('btn-register').addEventListener('click', (e) => {
+        e.preventDefault();
         const username = document.getElementById('username-input').value.trim();
         const password = document.getElementById('password-input').value.trim();
-        if (!username || !password) return alert('لطفاً نام کاربری و رمز عبور را وارد کنید');
+        if (!username || !password) {
+            alert('لطفاً نام کاربری و رمز عبور را وارد کنید');
+            return;
+        }
         socket.emit('register_user', { username, password });
     });
 
-    document.getElementById('btn-login').addEventListener('click', () => {
+    document.getElementById('btn-login').addEventListener('click', (e) => {
+        e.preventDefault();
         const username = document.getElementById('username-input').value.trim();
         const password = document.getElementById('password-input').value.trim();
-        if (!username || !password) return alert('لطفاً نام کاربری و رمز عبور را وارد کنید');
+        if (!username || !password) {
+            alert('لطفاً نام کاربری و رمز عبور را وارد کنید');
+            return;
+        }
         socket.emit('login_user', { username, password });
+    });
+
+    // کلید Enter روی اینپوت رمز عبور برای ورود سریع
+    document.getElementById('password-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            document.getElementById('btn-login').click();
+        }
     });
 
     socket.on('login_success', ({ user, isOwner }) => {
@@ -480,7 +495,6 @@
         renderBoard(Array(9).fill(null), d.turn);
     });
 
-    // سلول‌های بازی آنلاین
     document.querySelectorAll('#game-board .cell').forEach(cell => {
         cell.addEventListener('click', () => {
             const index = parseInt(cell.getAttribute('data-index'));
@@ -545,7 +559,6 @@
         }
     });
 
-    // دکمه‌های ربات
     document.querySelectorAll('[data-diff]').forEach(btn => {
         btn.addEventListener('click', () => {
             const diff = btn.getAttribute('data-diff');
