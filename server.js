@@ -234,6 +234,7 @@ io.on('connection', (socket) => {
         delete botGames[socket.id];
     }
 
+    // بخش آنلاین (پشتیبانی از مسابقات ۳ دسته)
     socket.on('find_game', () => {
         const username = socket.data.username;
         if (!username || !db.users[username]) return;
@@ -266,6 +267,9 @@ io.on('connection', (socket) => {
                         usernames: [username, opponentUsername],
                         board: Array(9).fill(null),
                         turn: socket.id,
+                        scores: { [socket.id]: 0, [opponentSocketId]: 0 },
+                        currentRound: 1,
+                        maxRounds: 3,
                         timeouts: { [socket.id]: 0, [opponentSocketId]: 0 },
                         timer: null
                     };
@@ -276,7 +280,11 @@ io.on('connection', (socket) => {
                     io.to(roomId).emit('game_start', {
                         roomId,
                         players: { [socket.id]: username, [opponentSocketId]: opponentUsername },
+                        symbols: { [socket.id]: 'X', [opponentSocketId]: 'O' },
                         turn: socket.id,
+                        turnName: username,
+                        scores: { [socket.id]: 0, [opponentSocketId]: 0 },
+                        round: 1,
                         timeLeft: 30
                     });
 
@@ -372,7 +380,7 @@ function startTurnTimer(roomId) {
 
         if (game.timeouts[currentTurnSocketId] >= 2) {
             const winnerSocketId = game.players.find(id => id !== currentTurnSocketId);
-            handleGameOverByTimeout(roomId, winnerSocketId, currentTurnSocketId);
+            handleFinalMatchOver(roomId, winnerSocketId, 'عدم پاسخگویی حریف');
         } else {
             const emptyCells = [];
             game.board.forEach((val, idx) => { if (val === null) emptyCells.push(idx); });
@@ -396,134 +404,109 @@ function processMove(roomId, socketId, index) {
     game.board[index] = symbol;
 
     const winnerSymbol = checkWin(game.board);
-    
-    if (winnerSymbol || game.board.every(cell => cell !== null)) {
-        let finalWinnerSocket = null;
-        const p1Socket = game.players[0];
-        const p2Socket = game.players[1];
-        const u1 = game.usernames[0];
-        const u2 = game.usernames[1];
+    const p1Socket = game.players[0];
+    const p2Socket = game.players[1];
+    const u1 = game.usernames[0];
+    const u2 = game.usernames[1];
 
+    if (winnerSymbol || game.board.every(cell => cell !== null)) {
+        let roundWinnerId = null;
         if (winnerSymbol) {
-            finalWinnerSocket = (winnerSymbol === 'X') ? p1Socket : p2Socket;
+            roundWinnerId = (winnerSymbol === 'X') ? p1Socket : p2Socket;
+            game.scores[roundWinnerId]++;
         }
 
-        if (finalWinnerSocket) {
-            const loserSocket = finalWinnerSocket === p1Socket ? p2Socket : p1Socket;
-            const winnerUser = db.users[finalWinnerSocket === p1Socket ? u1 : u2];
-            const loserUser = db.users[loserSocket === p1Socket ? u1 : u2];
-            
-            winnerUser.coins += 80;
-            winnerUser.trophies += 40;
-            if (!loserUser.isOwner) {
-                loserUser.trophies = Math.max(0, loserUser.trophies - 10);
-            }
-            saveDB();
+        const isMatchEnded = game.currentRound >= game.maxRounds || 
+                             game.scores[p1Socket] >= 2 || 
+                             game.scores[p2Socket] >= 2;
 
-            io.to(roomId).emit('game_over', {
-                board: game.board,
-                winnerName: winnerUser.username,
-                isDraw: false
-            });
+        if (isMatchEnded) {
+            let finalWinnerId = null;
+            if (game.scores[p1Socket] > game.scores[p2Socket]) finalWinnerId = p1Socket;
+            else if (game.scores[p2Socket] > game.scores[p1Socket]) finalWinnerId = p2Socket;
+
+            if (finalWinnerId) {
+                const loserSocketId = finalWinnerId === p1Socket ? p2Socket : p1Socket;
+                const winnerUser = db.users[finalWinnerId === p1Socket ? u1 : u2];
+                const loserUser = db.users[loserSocketId === p1Socket ? u1 : u2];
+
+                winnerUser.coins += 80;
+                winnerUser.trophies += 40;
+                if (!loserUser.isOwner) {
+                    loserUser.trophies = Math.max(0, loserUser.trophies - 10);
+                }
+                saveDB();
+
+                io.to(roomId).emit('match_over', {
+                    board: game.board,
+                    scores: game.scores,
+                    winnerName: winnerUser.username,
+                    isDraw: false
+                });
+            } else {
+                const user1 = db.users[u1];
+                const user2 = db.users[u2];
+                if (!user1.isOwner) user1.coins += 10;
+                if (!user2.isOwner) user2.coins += 10;
+                saveDB();
+
+                io.to(roomId).emit('match_over', {
+                    board: game.board,
+                    scores: game.scores,
+                    winnerName: 'مساوی کل مسابقه (برگشت سکه‌ها)!',
+                    isDraw: true
+                });
+            }
 
             io.to(p1Socket).emit('update_stats', getPublicUserData(db.users[u1]));
             io.to(p2Socket).emit('update_stats', getPublicUserData(db.users[u2]));
             broadcastLeaderboard();
             delete activeGames[roomId];
         } else {
-            const user1 = db.users[u1];
-            const user2 = db.users[u2];
-
-            if (!user1.isOwner) user1.coins += 10;
-            if (!user2.isOwner) user2.coins += 10;
-            saveDB();
-
-            io.to(roomId).emit('game_over', {
+            // رفتن به راند بعدی
+            io.to(roomId).emit('round_over', {
                 board: game.board,
-                winnerName: 'مساوی (برگشت سکه‌ها)!',
-                isDraw: true
+                scores: game.scores,
+                roundWinner: roundWinnerId ? db.users[roundWinnerId === p1Socket ? u1 : u2].username : 'مساوی این راند'
             });
 
-            io.to(p1Socket).emit('update_stats', getPublicUserData(user1));
-            io.to(p2Socket).emit('update_stats', getPublicUserData(user2));
-            broadcastLeaderboard();
-            delete activeGames[roomId];
+            setTimeout(() => {
+                if (!activeGames[roomId]) return;
+                game.currentRound++;
+                game.board = Array(9).fill(null);
+                game.turn = game.players[(game.currentRound - 1) % 2]; // تغییر شروع‌کننده نوبت در راند جدید
+                
+                const currentTurnName = game.turn === p1Socket ? u1 : u2;
+
+                io.to(roomId).emit('next_round', {
+                    board: game.board,
+                    turn: game.turn,
+                    turnName: currentTurnName,
+                    scores: game.scores,
+                    round: game.currentRound,
+                    timeLeft: 30
+                });
+                startTurnTimer(roomId);
+            }, 2500);
         }
     } else {
         game.turn = game.players.find(id => id !== socketId);
-        io.to(roomId).emit('update_board', { board: game.board, turn: game.turn, timeLeft: 30 });
+        const nextTurnName = game.turn === p1Socket ? u1 : u2;
+        io.to(roomId).emit('update_board', { 
+            board: game.board, 
+            turn: game.turn, 
+            turnName: nextTurnName,
+            scores: game.scores,
+            timeLeft: 30 
+        });
         startTurnTimer(roomId);
     }
 }
 
-function handleGameOverBySurrender(roomId, loserSocketId) {
+function handleFinalMatchOver(roomId, winnerSocketId, reason) {
     const game = activeGames[roomId];
     if (!game) return;
     if (game.timer) clearTimeout(game.timer);
-
-    const p1Socket = game.players[0];
-    const p2Socket = game.players[1];
-    const u1 = game.usernames[0];
-    const u2 = game.usernames[1];
-
-    const winnerSocket = (loserSocketId === p1Socket) ? p2Socket : p1Socket;
-    const winnerUser = db.users[winnerSocket === p1Socket ? u1 : u2];
-    const loserUser = db.users[loserSocket === p1Socket ? u1 : u2];
-
-    winnerUser.coins += 80;
-    winnerUser.trophies += 40;
-    if (!loserUser.isOwner) {
-        loserUser.trophies = Math.max(0, loserUser.trophies - 10);
-    }
-    saveDB();
-
-    io.to(roomId).emit('game_over', {
-        board: game.board,
-        winnerName: `${winnerUser.username} (تسلیم حریف)`,
-        isDraw: false
-    });
-
-    io.to(p1Socket).emit('update_stats', getPublicUserData(db.users[u1]));
-    io.to(p2Socket).emit('update_stats', getPublicUserData(db.users[u2]));
-    broadcastLeaderboard();
-    delete activeGames[roomId];
-}
-
-function handleGameOverByTimeout(roomId, winnerSocketId, loserSocketId) {
-    const game = activeGames[roomId];
-    if (!game) return;
-    if (game.timer) clearTimeout(game.timer);
-
-    const p1Socket = game.players[0];
-    const p2Socket = game.players[1];
-    const u1 = game.usernames[0];
-    const u2 = game.usernames[1];
-
-    const winnerUser = db.users[winnerSocketId === p1Socket ? u1 : u2];
-    const loserUser = db.users[loserSocketId === p1Socket ? u1 : u2];
-
-    winnerUser.coins += 80;
-    winnerUser.trophies += 40;
-    if (!loserUser.isOwner) {
-        loserUser.trophies = Math.max(0, loserUser.trophies - 10);
-    }
-    saveDB();
-
-    io.to(roomId).emit('game_over', {
-        board: game.board,
-        winnerName: `${winnerUser.username} (عدم پاسخگویی)`,
-        isDraw: false
-    });
-
-    io.to(p1Socket).emit('update_stats', getPublicUserData(db.users[u1]));
-    io.to(p2Socket).emit('update_stats', getPublicUserData(db.users[u2]));
-    broadcastLeaderboard();
-    delete activeGames[roomId];
-}
-
-function handleGameOverByDisconnect(roomId, winnerSocketId) {
-    const game = activeGames[roomId];
-    if (!game) return;
 
     const p1Socket = game.players[0];
     const p2Socket = game.players[1];
@@ -541,15 +524,26 @@ function handleGameOverByDisconnect(roomId, winnerSocketId) {
     }
     saveDB();
 
-    io.to(winnerSocketId).emit('game_over', {
+    io.to(roomId).emit('match_over', {
         board: game.board,
-        winnerName: `${winnerUser.username} (قطع ارتباط)`,
+        scores: game.scores,
+        winnerName: `${winnerUser.username} (${reason})`,
         isDraw: false
     });
 
-    io.to(winnerSocketId).emit('update_stats', getPublicUserData(winnerUser));
+    io.to(p1Socket).emit('update_stats', getPublicUserData(db.users[u1]));
+    io.to(p2Socket).emit('update_stats', getPublicUserData(db.users[u2]));
     broadcastLeaderboard();
     delete activeGames[roomId];
+}
+
+function handleGameOverBySurrender(roomId, loserSocketId) {
+    const winnerSocketId = activeGames[roomId].players.find(id => id !== loserSocketId);
+    handleFinalMatchOver(roomId, winnerSocketId, 'تسلیم حریف');
+}
+
+function handleGameOverByDisconnect(roomId, winnerSocketId) {
+    handleFinalMatchOver(roomId, winnerSocketId, 'قطع ارتباط حریف');
 }
 
 function checkWin(b) {
