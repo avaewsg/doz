@@ -12,7 +12,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const DB_FILE = path.join(__dirname, 'database.json');
 
-// بارگذاری پایگاه داده از روی دیسک (برای نپریدن اطلاعات هنگام آپدیت روی رایلی)
 let db = { users: {} };
 if (fs.existsSync(DB_FILE)) {
     try {
@@ -32,14 +31,12 @@ const activeGames = {};
 io.on('connection', (socket) => {
     console.log('کاربر متصل شد:', socket.id);
 
-    // ثبت‌نام یا ورود
     socket.on('auth', ({ username, password }) => {
         username = username.trim();
         if (!username || !password) {
             return socket.emit('error_msg', 'لطفاً نام کاربری و رمز عبور را وارد کنید');
         }
 
-        // بررسی اکانت مالک
         if (username === 'Kiarash') {
             if (password !== 'kia12') {
                 return socket.emit('error_msg', 'رمز عبور مالک اشتباه است!');
@@ -47,13 +44,11 @@ io.on('connection', (socket) => {
         }
 
         if (db.users[username]) {
-            // ورود کاربر موجود
             if (db.users[username].password !== password) {
                 return socket.emit('error_msg', 'رمز عبور اشتباه است!');
             }
             db.users[username].socketId = socket.id;
         } else {
-            // ثبت‌نام کاربر جدید
             db.users[username] = {
                 username,
                 password,
@@ -76,7 +71,6 @@ io.on('connection', (socket) => {
         if (!username || !db.users[username]) return;
         const player = db.users[username];
 
-        // مالک سکه بی‌نهایت دارد و ازش کم نمی‌شود
         if (!player.isOwner) {
             if (player.coins < 10) {
                 socket.emit('error_msg', 'سکه‌های شما برای ورود کافی نیست (حداقل ۱۰ سکه)');
@@ -163,6 +157,7 @@ io.on('connection', (socket) => {
             }
 
             if (finalWinnerSocket) {
+                // اگر برنده مشخص شد
                 const loserSocket = finalWinnerSocket === p1Socket ? p2Socket : p1Socket;
                 const winnerUser = db.users[finalWinnerSocket === p1Socket ? u1 : u2];
                 const loserUser = db.users[loserSocket === p1Socket ? u1 : u2];
@@ -182,29 +177,40 @@ io.on('connection', (socket) => {
 
                 io.to(p1Socket).emit('update_stats', getPublicUserData(db.users[u1]));
                 io.to(p2Socket).emit('update_stats', getPublicUserData(db.users[u2]));
+                broadcastLeaderboard();
+                delete activeGames[roomId];
             } else {
+                // اگر بازی مساوی شد: بازگشت سکه‌ها و بدون تغییر کاپ (انگار بازی نکردن)
+                const user1 = db.users[u1];
+                const user2 = db.users[u2];
+
+                if (!user1.isOwner) user1.coins += 10;
+                if (!user2.isOwner) user2.coins += 10;
+                saveDB();
+
                 io.to(roomId).emit('game_over', {
                     board: game.board,
-                    winnerName: 'مساوی!',
+                    winnerName: 'مساوی (برگشت سکه‌ها)!',
                     isDraw: true
                 });
+
+                io.to(p1Socket).emit('update_stats', getPublicUserData(user1));
+                io.to(p2Socket).emit('update_stats', getPublicUserData(user2));
+                broadcastLeaderboard();
+                delete activeGames[roomId];
             }
-            broadcastLeaderboard();
-            delete activeGames[roomId];
         } else {
             game.turn = game.players.find(id => id !== socket.id);
             io.to(roomId).emit('update_board', { board: game.board, turn: game.turn });
         }
     });
 
-    // چت در حین بازی
     socket.on('send_chat', ({ roomId, message }) => {
         const username = socket.data.username;
         if (!username) return;
         io.to(roomId).emit('receive_chat', { username, message });
     });
 
-    // مدیریت سکه توسط مالک
     socket.on('admin_set_coins', ({ targetUsername, newCoins }) => {
         const adminUsername = socket.data.username;
         if (!adminUsername || !db.users[adminUsername]?.isOwner) return;
