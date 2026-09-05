@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DozX | دوزایکس آنلاین</title>
+    <title>DozX | دوزایکس پیشرفته</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@400;700;900&display=swap');
 
         * { box-sizing: border-box; }
 
         body {
-            background: #05050a;
+            background: #030308;
             background-image: 
-                radial-gradient(circle at 15% 15%, rgba(0, 243, 255, 0.15) 0%, transparent 45%),
-                radial-gradient(circle at 85% 85%, rgba(176, 0, 255, 0.15) 0%, transparent 45%);
+                radial-gradient(circle at 10% 20%, rgba(0, 243, 255, 0.2) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(255, 0, 127, 0.2) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(112, 0, 255, 0.15) 0%, transparent 60%);
             color: #fff;
             font-family: 'Vazirmatn', sans-serif;
             display: flex;
@@ -27,16 +28,16 @@
         .container {
             width: 100%;
             max-width: 440px;
-            padding: 15px;
+            padding: 12px;
         }
 
         .card {
-            background: rgba(13, 13, 25, 0.9);
-            border: 1px solid rgba(0, 243, 255, 0.35);
-            border-radius: 30px;
-            padding: 30px 20px;
-            backdrop-filter: blur(20px);
-            box-shadow: 0 0 45px rgba(0, 0, 0, 0.9), inset 0 0 25px rgba(0, 243, 255, 0.05);
+            background: rgba(10, 10, 22, 0.85);
+            border: 1.5px solid rgba(0, 243, 255, 0.3);
+            border-radius: 28px;
+            padding: 24px 18px;
+            backdrop-filter: blur(25px);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.95), inset 0 0 30px rgba(0, 243, 255, 0.04);
             text-align: center;
             position: relative;
             animation: cardAppear 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -49,35 +50,35 @@
 
         h2 {
             font-family: 'Lalezar', cursive;
-            font-size: 40px;
+            font-size: 38px;
             letter-spacing: 2px;
             background: linear-gradient(135deg, #00f3ff, #b000ff, #ff007f);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 5px;
+            margin-bottom: 2px;
         }
 
-        p { color: #94a3b8; font-size: 13px; margin-bottom: 20px; }
+        p { color: #94a3b8; font-size: 13px; margin-bottom: 15px; }
 
         .login-box-glow {
-            background: radial-gradient(circle, rgba(0,243,255,0.08) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(0,243,255,0.06) 0%, transparent 70%);
             border-radius: 20px;
             padding: 5px;
         }
 
         .input-box {
             position: relative;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
         input {
             width: 100%;
-            padding: 15px 18px;
+            padding: 13px 16px;
             border-radius: 14px;
-            border: 2px solid rgba(0, 243, 255, 0.5);
-            background: rgba(8, 8, 18, 0.9);
+            border: 2px solid rgba(0, 243, 255, 0.4);
+            background: rgba(6, 6, 15, 0.9);
             color: #fff;
-            font-size: 17px;
+            font-size: 16px;
             font-family: 'Vazirmatn', sans-serif;
             text-align: center;
             outline: none;
@@ -86,7 +87,7 @@
 
         input:focus {
             border-color: #00f3ff;
-            box-shadow: 0 0 20px rgba(0, 243, 255, 0.5);
+            box-shadow: 0 0 18px rgba(0, 243, 255, 0.45);
         }
 
         .neon-btn {
@@ -94,55 +95,59 @@
             background: linear-gradient(135deg, #00f3ff, #7000ff);
             border: none;
             color: #fff;
-            padding: 14px;
-            font-size: 18px;
+            padding: 13px;
+            font-size: 17px;
             font-family: 'Lalezar', cursive;
             letter-spacing: 1px;
             border-radius: 14px;
             cursor: pointer;
-            box-shadow: 0 6px 20px rgba(112, 0, 255, 0.5);
+            box-shadow: 0 5px 18px rgba(112, 0, 255, 0.45);
             transition: all 0.25s ease;
-            margin-top: 5px;
+            margin-top: 6px;
         }
 
         .neon-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 243, 255, 0.7);
+            box-shadow: 0 7px 22px rgba(0, 243, 255, 0.65);
         }
 
         .secondary-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(0, 243, 255, 0.4);
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(0, 243, 255, 0.35);
             box-shadow: none;
-            margin-top: 10px;
         }
 
         .danger-btn {
             background: linear-gradient(135deg, #ff4757, #ff1e56);
-            box-shadow: 0 6px 20px rgba(255, 71, 87, 0.5);
+            box-shadow: 0 5px 18px rgba(255, 71, 87, 0.45);
         }
 
         .admin-btn {
             background: linear-gradient(135deg, #ffa502, #ff7f50);
-            box-shadow: 0 6px 20px rgba(255, 165, 2, 0.5);
-            margin-bottom: 12px;
+            box-shadow: 0 5px 18px rgba(255, 165, 2, 0.45);
+            margin-bottom: 8px;
+        }
+
+        .bot-btn {
+            background: linear-gradient(135deg, #2ed573, #1e90ff);
+            box-shadow: 0 5px 18px rgba(46, 213, 115, 0.45);
         }
 
         .stats-row {
             display: flex;
             justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 15px;
+            gap: 8px;
+            margin-bottom: 12px;
         }
 
         .stat-badge {
             flex: 1;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            padding: 8px;
             border-radius: 12px;
             font-weight: 700;
-            font-size: 14px;
+            font-size: 13px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -150,8 +155,8 @@
         }
 
         .sticker-icon {
-            width: 22px;
-            height: 22px;
+            width: 20px;
+            height: 20px;
             vertical-align: middle;
             filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.7));
         }
@@ -160,56 +165,107 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 16px;
-            height: 16px;
+            width: 15px;
+            height: 15px;
             background: #229ed9;
             border-radius: 50%;
             color: #fff;
-            font-size: 10px;
+            font-size: 9px;
             margin-right: 4px;
             vertical-align: middle;
-            box-shadow: 0 0 8px rgba(34, 158, 217, 0.8);
+            box-shadow: 0 0 6px rgba(34, 158, 217, 0.8);
         }
 
         .leaderboard-container {
-            background: rgba(8, 8, 16, 0.6);
+            background: rgba(6, 6, 14, 0.6);
             border: 1px solid rgba(0, 243, 255, 0.2);
-            border-radius: 14px;
-            padding: 10px;
-            margin-bottom: 15px;
-            max-height: 150px;
+            border-radius: 12px;
+            padding: 8px;
+            margin-bottom: 10px;
+            max-height: 120px;
             overflow-y: auto;
         }
 
         .leaderboard-title {
             font-family: 'Lalezar', cursive;
-            font-size: 16px;
+            font-size: 15px;
             color: #00f3ff;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
 
         .lb-item {
             display: flex;
             justify-content: space-between;
-            padding: 5px 8px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            font-size: 13px;
+            padding: 3px 6px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            font-size: 12px;
             align-items: center;
+        }
+
+        /* چت عمومی منو */
+        .global-chat-box {
+            background: rgba(6, 6, 14, 0.75);
+            border: 1px solid rgba(0, 243, 255, 0.25);
+            border-radius: 12px;
+            padding: 8px;
+            margin-bottom: 12px;
+            text-align: right;
+        }
+
+        .global-chat-messages {
+            height: 90px;
+            overflow-y: auto;
+            font-size: 11px;
+            margin-bottom: 6px;
+            padding: 4px;
+            background: rgba(0,0,0,0.35);
+            border-radius: 8px;
+        }
+
+        .chat-msg-owner {
+            background: rgba(255, 193, 7, 0.15);
+            border: 1px solid rgba(255, 193, 7, 0.6);
+            border-radius: 6px;
+            padding: 3px 6px;
+            margin-bottom: 4px;
+        }
+
+        .chat-msg-normal {
+            padding: 2px 4px;
+            margin-bottom: 3px;
+        }
+
+        .chat-input-row {
+            display: flex;
+            gap: 5px;
+        }
+
+        .chat-input-row input {
+            padding: 7px;
+            font-size: 12px;
+            margin: 0;
+        }
+
+        .chat-input-row button {
+            padding: 7px 10px;
+            font-size: 13px;
+            width: auto;
+            margin: 0;
         }
 
         .board {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin: 15px 0;
+            gap: 10px;
+            margin: 12px 0;
         }
 
         .cell {
-            background: rgba(10, 10, 20, 0.9);
+            background: rgba(8, 8, 18, 0.9);
             border: 2px solid rgba(0, 243, 255, 0.3);
-            border-radius: 16px;
-            height: 90px;
-            font-size: 50px;
+            border-radius: 14px;
+            height: 85px;
+            font-size: 45px;
             font-family: 'Lalezar', cursive;
             display: flex;
             align-items: center;
@@ -223,58 +279,8 @@
             background: rgba(0, 243, 255, 0.08);
         }
 
-        .cell.x { color: #00f3ff; text-shadow: 0 0 15px rgba(0, 243, 255, 0.8); }
-        .cell.o { color: #ff007f; text-shadow: 0 0 15px rgba(255, 0, 127, 0.8); }
-
-        .chat-box {
-            background: rgba(8, 8, 16, 0.7);
-            border: 1px solid rgba(0, 243, 255, 0.2);
-            border-radius: 12px;
-            padding: 8px;
-            margin-top: 10px;
-            text-align: right;
-        }
-
-        .chat-messages {
-            height: 80px;
-            overflow-y: auto;
-            font-size: 12px;
-            margin-bottom: 6px;
-            padding: 4px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 8px;
-        }
-
-        .chat-msg-owner {
-            background: rgba(255, 193, 7, 0.15);
-            border: 1px solid rgba(255, 193, 7, 0.6);
-            border-radius: 6px;
-            padding: 3px 6px;
-            margin-bottom: 4px;
-        }
-
-        .chat-msg-normal {
-            padding: 3px 6px;
-            margin-bottom: 4px;
-        }
-
-        .chat-input-row {
-            display: flex;
-            gap: 6px;
-        }
-
-        .chat-input-row input {
-            padding: 8px;
-            font-size: 13px;
-            margin: 0;
-        }
-
-        .chat-input-row button {
-            padding: 8px 12px;
-            font-size: 14px;
-            width: auto;
-            margin: 0;
-        }
+        .cell.x { color: #00f3ff; text-shadow: 0 0 12px rgba(0, 243, 255, 0.8); }
+        .cell.o { color: #ff007f; text-shadow: 0 0 12px rgba(255, 0, 127, 0.8); }
 
         .modal {
             position: fixed;
@@ -308,12 +314,12 @@
         .hidden { display: none !important; }
 
         .loader {
-            width: 45px; height: 45px;
+            width: 40px; height: 40px;
             border: 4px solid rgba(0, 243, 255, 0.1);
             border-top: 4px solid #00f3ff;
             border-radius: 50%;
             animation: spin 0.9s linear infinite;
-            margin: 20px auto;
+            margin: 15px auto;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -321,6 +327,7 @@
 <body>
 
 <div class="container">
+    <!-- ۱. صفحه ورود -->
     <div id="login-section" class="card">
         <h2>DozX</h2>
         <p>لطفاً وارد شوید یا ثبت‌نام کنید:</p>
@@ -336,8 +343,9 @@
         </div>
     </div>
 
+    <!-- ۲. منوی اصلی -->
     <div id="menu-section" class="card hidden">
-        <h3 id="welcome-user" style="font-size: 22px; font-family: 'Lalezar', cursive; color: #00f3ff; margin-bottom: 10px;">سلام</h3>
+        <h3 id="welcome-user" style="font-size: 20px; font-family: 'Lalezar', cursive; color: #00f3ff; margin-bottom: 8px;">سلام</h3>
         
         <div class="stats-row">
             <div class="stat-badge">
@@ -357,12 +365,21 @@
             <div id="leaderboard-list"></div>
         </div>
 
-        <p style="background: rgba(0,243,255,0.04); border: 1px dashed rgba(0,243,255,0.25); padding: 8px; border-radius: 10px; margin-bottom: 15px; color: #a5b4fc; font-size: 12px;">
-            ورودی: ۱۰ سکه | جایزه برنده: ۸۰ سکه + ۴۰ کاپ
-        </p>
-        <button class="neon-btn" onclick="findGame()">شروع بازی آنلاین 🎮</button>
+        <!-- چت عمومی منو -->
+        <div class="global-chat-box">
+            <div style="font-size: 12px; color: #00f3ff; font-family: 'Lalezar', cursive; margin-bottom: 3px;">💬 چت عمومی آنلاین</div>
+            <div class="global-chat-messages" id="global-chat-messages"></div>
+            <div class="chat-input-row">
+                <input type="text" id="global-chat-input" placeholder="پیام عمومی...">
+                <button class="neon-btn" onclick="sendGlobalChat()">ارسال</button>
+            </div>
+        </div>
+
+        <button class="neon-btn" onclick="findGame()">بازی آنلاین (ورودی ۱۰ سکه) 🎮</button>
+        <button class="neon-btn bot-btn" onclick="startBotGame()">بازی با ربات (رایگان) 🤖</button>
     </div>
 
+    <!-- ۳. صفحه انتظار آنلاین -->
     <div id="waiting-section" class="card hidden">
         <h2>در حال جستجوی حریف...</h2>
         <div class="loader"></div>
@@ -370,8 +387,9 @@
         <button class="neon-btn danger-btn" onclick="cancelSearch()">لغو جستجو</button>
     </div>
 
+    <!-- ۴. صفحه بازی آنلاین -->
     <div id="game-section" class="card hidden">
-        <div class="stats-row" style="margin-bottom: 10px; font-size: 13px;">
+        <div class="stats-row" style="margin-bottom: 8px; font-size: 12px;">
             <div class="stat-badge" style="color: #00f3ff;" id="p1-name">شما</div>
             <div class="stat-badge" style="color: #ff007f;" id="p2-name">حریف</div>
         </div>
@@ -388,18 +406,38 @@
             <div class="cell" onclick="makeMove(8)"></div>
         </div>
 
-        <div id="turn-indicator" style="font-family: 'Lalezar', cursive; font-size: 18px; color: #ffeb3b; margin-bottom: 4px;">نوبت شماست!</div>
-        <div id="timer-display" style="font-size: 13px; color: #00f3ff; margin-bottom: 8px;">⏰ زمان باقی‌مانده: <span id="time-left">30</span> ثانیه</div>
+        <div id="turn-indicator" style="font-family: 'Lalezar', cursive; font-size: 17px; color: #ffeb3b; margin-bottom: 2px;">نوبت شماست!</div>
+        <div id="timer-display" style="font-size: 12px; color: #00f3ff; margin-bottom: 6px;">⏰ زمان: <span id="time-left">30</span> ثانیه</div>
         
-        <button class="neon-btn danger-btn" style="padding: 8px; font-size: 15px; margin-bottom: 10px;" onclick="confirmSurrender()">🚪 خروج و پذیرش باخت</button>
+        <button class="neon-btn danger-btn" style="padding: 7px; font-size: 14px; margin-bottom: 8px;" onclick="confirmSurrender()">🚪 خروج و پذیرش باخت</button>
 
-        <div class="chat-box">
-            <div class="chat-messages" id="chat-messages"></div>
+        <div class="global-chat-box">
+            <div class="global-chat-messages" id="chat-messages"></div>
             <div class="chat-input-row">
                 <input type="text" id="chat-input" placeholder="پیام به حریف...">
                 <button class="neon-btn" onclick="sendChat()">ارسال</button>
             </div>
         </div>
+    </div>
+
+    <!-- ۵. صفحه بازی با ربات -->
+    <div id="bot-game-section" class="card hidden">
+        <h3 style="font-family: 'Lalezar', cursive; color: #2ed573; margin-top: 0; margin-bottom: 8px;">بازی با ربات هوشمند 🤖</h3>
+        
+        <div class="board" id="bot-game-board">
+            <div class="cell" onclick="makeBotMove(0)"></div>
+            <div class="cell" onclick="makeBotMove(1)"></div>
+            <div class="cell" onclick="makeBotMove(2)"></div>
+            <div class="cell" onclick="makeBotMove(3)"></div>
+            <div class="cell" onclick="makeBotMove(4)"></div>
+            <div class="cell" onclick="makeBotMove(5)"></div>
+            <div class="cell" onclick="makeBotMove(6)"></div>
+            <div class="cell" onclick="makeBotMove(7)"></div>
+            <div class="cell" onclick="makeBotMove(8)"></div>
+        </div>
+
+        <div id="bot-turn-indicator" style="font-family: 'Lalezar', cursive; font-size: 17px; color: #ffeb3b; margin-bottom: 12px;">نوبت شماست!</div>
+        <button class="neon-btn danger-btn" onclick="exitBotGame()">خروج از بازی با ربات</button>
     </div>
 </div>
 
@@ -417,6 +455,7 @@
     let currentRoomId = null;
     let myTurn = false;
     let turnInterval = null;
+    let isBotMatch = false;
 
     function registerUser() {
         const username = document.getElementById('username-input').value.trim();
@@ -466,9 +505,7 @@
             else if (index === 2) rankEmoji = '🥉';
 
             let nameDisplay = p.username;
-            if (p.isOwner) {
-                nameDisplay += ` <span class="verified-badge">✓</span>`;
-            }
+            if (p.isOwner) nameDisplay += ` <span class="verified-badge">✓</span>`;
 
             item.innerHTML = `<span>${rankEmoji} ${nameDisplay}</span> <span style="color: #ffd700;">🏆 ${p.trophies}</span>`;
             lbList.appendChild(item);
@@ -476,9 +513,7 @@
     });
 
     let allUsersCache = [];
-    socket.on('update_user_list', (users) => {
-        allUsersCache = users;
-    });
+    socket.on('update_user_list', (users) => { allUsersCache = users; });
 
     function openAdminPanel() {
         document.getElementById('admin-modal').classList.remove('hidden');
@@ -488,17 +523,13 @@
             const row = document.createElement('div');
             row.className = 'user-row-admin';
             let nameDisplay = u.username;
-            if (u.isOwner) {
-                nameDisplay += ` <span class="verified-badge">✓</span>`;
-            }
-            row.innerHTML = `<span>${nameDisplay} (سکه: ${u.isOwner ? 'بی‌نهایت' : u.coins})</span> <button class="neon-btn" style="width: auto; padding: 4px 10px; font-size: 13px;" onclick="changeUserCoins('${u.username}')">تغییر سکه</button>`;
+            if (u.isOwner) nameDisplay += ` <span class="verified-badge">✓</span>`;
+            row.innerHTML = `<span>${nameDisplay} (سکه: ${u.isOwner ? 'بی‌نهایت' : u.coins})</span> <button class="neon-btn" style="width: auto; padding: 3px 8px; font-size: 12px;" onclick="changeUserCoins('${u.username}')">تغییر سکه</button>`;
             listDiv.appendChild(row);
         });
     }
 
-    function closeAdminPanel() {
-        document.getElementById('admin-modal').classList.add('hidden');
-    }
+    function closeAdminPanel() { document.getElementById('admin-modal').classList.add('hidden'); }
 
     function changeUserCoins(targetUsername) {
         const newCoins = prompt(`مقدار سکه جدید برای ${targetUsername} را وارد کنید:`);
@@ -508,19 +539,111 @@
         }
     }
 
-    socket.on('error_msg', (msg) => {
-        alert(msg);
+    socket.on('error_msg', (msg) => { alert(msg); });
+
+    // چت عمومی منو
+    function sendGlobalChat() {
+        const input = document.getElementById('global-chat-input');
+        const message = input.value.trim();
+        if (!message) return;
+        socket.emit('send_global_chat', message);
+        input.value = '';
+    }
+
+    socket.on('init_global_chat', (messages) => {
+        const chatBox = document.getElementById('global-chat-messages');
+        chatBox.innerHTML = '';
+        messages.forEach(m => appendGlobalMsg(m));
     });
 
+    socket.on('receive_global_chat', (m) => {
+        appendGlobalMsg(m);
+    });
+
+    socket.on('global_chat_cleared', (alertMsg) => {
+        const chatBox = document.getElementById('global-chat-messages');
+        chatBox.innerHTML = '';
+        const msgDiv = document.createElement('div');
+        msgDiv.style.color = '#ffa502';
+        msgDiv.style.fontSize = '11px';
+        msgDiv.innerHTML = `🧹 <b>سیستم:</b> ${alertMsg}`;
+        chatBox.appendChild(msgDiv);
+    });
+
+    function appendGlobalMsg(m) {
+        const chatBox = document.getElementById('global-chat-messages');
+        const msgDiv = document.createElement('div');
+        let nameDisplay = m.username;
+        if (m.isOwner) {
+            nameDisplay += ` <span class="verified-badge">✓</span>`;
+            msgDiv.className = 'chat-msg-owner';
+            msgDiv.innerHTML = `<b>👑 ${nameDisplay}:</b> ${m.message}`;
+        } else {
+            msgDiv.className = 'chat-msg-normal';
+            msgDiv.innerHTML = `<b>${nameDisplay}:</b> ${m.message}`;
+        }
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // بازی با ربات
+    function startBotGame() {
+        isBotMatch = true;
+        document.getElementById('menu-section').classList.add('hidden');
+        document.getElementById('bot-game-section').classList.remove('hidden');
+        socket.emit('start_bot_game');
+    }
+
+    function exitBotGame() {
+        document.getElementById('bot-game-section').classList.add('hidden');
+        document.getElementById('menu-section').classList.remove('hidden');
+    }
+
+    socket.on('bot_game_start', (data) => {
+        renderBotBoard(data.board);
+        document.getElementById('bot-turn-indicator').innerText = '🟢 نوبت شماست!';
+    });
+
+    function makeBotMove(index) {
+        socket.emit('make_bot_move', { index });
+    }
+
+    socket.on('bot_game_update', (data) => {
+        renderBotBoard(data.board);
+        if (data.turn === 'bot') {
+            document.getElementById('bot-turn-indicator').innerText = '🤖 تفکر ربات...';
+        } else {
+            document.getElementById('bot-turn-indicator').innerText = '🟢 نوبت شماست!';
+        }
+    });
+
+    socket.on('bot_game_over', (data) => {
+        renderBotBoard(data.board);
+        setTimeout(() => {
+            alert(data.resultText);
+            document.getElementById('bot-game-section').classList.add('hidden');
+            document.getElementById('menu-section').classList.remove('hidden');
+        }, 300);
+    });
+
+    function renderBotBoard(board) {
+        const cells = document.querySelectorAll('#bot-game-board .cell');
+        for (let i = 0; i < 9; i++) {
+            cells[i].innerText = board[i] || '';
+            cells[i].className = 'cell';
+            if (board[i] === 'X') cells[i].classList.add('x');
+            if (board[i] === 'O') cells[i].classList.add('o');
+        }
+    }
+
+    // بخش آنلاین
     function findGame() {
         document.getElementById('menu-section').classList.add('hidden');
         document.getElementById('waiting-section').classList.remove('hidden');
         socket.emit('find_game');
     }
 
-    function cancelSearch() {
-        socket.emit('cancel_search');
-    }
+    function cancelSearch() { socket.emit('cancel_search'); }
 
     socket.on('search_cancelled', () => {
         document.getElementById('waiting-section').classList.add('hidden');
@@ -528,7 +651,7 @@
     });
 
     function confirmSurrender() {
-        if (confirm('آیا مطمئن هستید که می‌خواهید خارج شوید؟ با این کار بازی را می‌بازید و سکه و کاپ به حریف می‌رسد!')) {
+        if (confirm('آیا مطمئن هستید؟ با این کار بازی را می‌بازید و سکه و کاپ به حریف می‌رسد!')) {
             socket.emit('surrender_game', { roomId: currentRoomId });
         }
     }
@@ -544,11 +667,8 @@
         const opponentId = playerIds.find(id => id !== socket.id);
         document.getElementById('p2-name').innerText = data.players[opponentId];
         
-        const cells = document.getElementsByClassName('cell');
-        for (let c of cells) {
-            c.innerText = '';
-            c.className = 'cell';
-        }
+        const cells = document.querySelectorAll('#game-board .cell');
+        for (let c of cells) { c.innerText = ''; c.className = 'cell'; }
 
         setupTurnState(data.turn, data.timeLeft);
     });
@@ -567,7 +687,7 @@
         const chatBox = document.getElementById('chat-messages');
         const msgDiv = document.createElement('div');
         msgDiv.style.color = '#ffeb3b';
-        msgDiv.style.fontSize = '11px';
+        msgDiv.style.fontSize = '10px';
         msgDiv.innerHTML = `⚠️ <b>سیستم:</b> ${msg}`;
         chatBox.appendChild(msgDiv);
         chatBox.scrollTop = chatBox.scrollHeight;
@@ -575,7 +695,6 @@
 
     function setupTurnState(turnSocketId, timeLeft) {
         if (turnInterval) clearInterval(turnInterval);
-
         myTurn = (turnSocketId === socket.id);
         document.getElementById('turn-indicator').innerText = myTurn ? '🟢 نوبت شماست!' : '⏳ نوبت حریف است...';
 
@@ -584,12 +703,8 @@
 
         turnInterval = setInterval(() => {
             currentSec--;
-            if (currentSec >= 0) {
-                document.getElementById('time-left').innerText = currentSec;
-            }
-            if (currentSec <= 0) {
-                clearInterval(turnInterval);
-            }
+            if (currentSec >= 0) document.getElementById('time-left').innerText = currentSec;
+            if (currentSec <= 0) clearInterval(turnInterval);
         }, 1000);
     }
 
@@ -598,13 +713,13 @@
         renderBoard(data.board);
         setTimeout(() => {
             if (data.isDraw) {
-                alert('🤝 بازی مساوی شد! سکه‌های ورودی برگشت داده شد و کاپی تغییر نکرد.');
+                alert('🤝 بازی مساوی شد! سکه‌های ورودی برگشت داده شد.');
             } else {
                 alert(`🏆 پایان بازی!\nبرنده: ${data.winnerName}`);
             }
             document.getElementById('game-section').classList.add('hidden');
             document.getElementById('menu-section').classList.remove('hidden');
-        }, 400);
+        }, 300);
     });
 
     function sendChat() {
@@ -618,26 +733,21 @@
     socket.on('receive_chat', ({ username, message, isOwner }) => {
         const chatBox = document.getElementById('chat-messages');
         const msgDiv = document.createElement('div');
-        
         let nameDisplay = username;
         if (isOwner) {
             nameDisplay += ` <span class="verified-badge">✓</span>`;
-        }
-
-        if (isOwner) {
             msgDiv.className = 'chat-msg-owner';
             msgDiv.innerHTML = `<b>👑 ${nameDisplay}:</b> ${message}`;
         } else {
             msgDiv.className = 'chat-msg-normal';
             msgDiv.innerHTML = `<b>${nameDisplay}:</b> ${message}`;
         }
-
         chatBox.appendChild(msgDiv);
         chatBox.scrollTop = chatBox.scrollHeight;
     });
 
     function renderBoard(board) {
-        const cells = document.getElementsByClassName('cell');
+        const cells = document.querySelectorAll('#game-board .cell');
         for (let i = 0; i < 9; i++) {
             cells[i].innerText = board[i] || '';
             cells[i].className = 'cell';
