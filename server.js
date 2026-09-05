@@ -36,7 +36,6 @@ function saveDB() {
 setInterval(() => {
     globalChat = [];
     io.emit('global_chat_cleared', 'پاکسازی چت انجام شد؛ تاریخچه پیام‌ها ریست شد.');
-    console.log('پاکسازی خودکار چت عمومی انجام شد.');
 }, 3 * 60 * 60 * 1000);
 
 let waitingPlayers = [];
@@ -110,16 +109,9 @@ io.on('connection', (socket) => {
         if (!username || !db.users[username]) return;
         const isOwner = db.users[username].isOwner;
 
-        const chatObj = {
-            username,
-            message,
-            isOwner,
-            timestamp: Date.now()
-        };
-
+        const chatObj = { username, message, isOwner, timestamp: Date.now() };
         globalChat.push(chatObj);
         if (globalChat.length > 200) globalChat.shift();
-
         io.emit('receive_global_chat', chatObj);
     });
 
@@ -133,10 +125,7 @@ io.on('connection', (socket) => {
             difficulty: difficulty || 'medium'
         };
 
-        socket.emit('bot_game_start', {
-            board: botGames[socket.id].board,
-            turn: 'player'
-        });
+        socket.emit('bot_game_start', { board: botGames[socket.id].board, turn: 'player' });
     });
 
     socket.on('make_bot_move', ({ index }) => {
@@ -144,14 +133,12 @@ io.on('connection', (socket) => {
         if (!game || game.turn !== 'player' || game.board[index] !== null) return;
 
         game.board[index] = 'X';
-
         let winner = checkWin(game.board);
         if (winner || game.board.every(c => c !== null)) {
             handleBotGameOver(socket, game, winner);
         } else {
             game.turn = 'bot';
             socket.emit('bot_game_update', { board: game.board, turn: 'bot' });
-            
             setTimeout(() => {
                 if (!botGames[socket.id]) return;
                 makeBotAIMove(socket, game);
@@ -165,7 +152,6 @@ io.on('connection', (socket) => {
         if (emptyCells.length === 0) return;
 
         let chosenMove = null;
-
         if (game.difficulty === 'easy') {
             chosenMove = emptyCells[Math.floor(Math.random() * emptyCells.length)];
         } else if (game.difficulty === 'medium') {
@@ -176,13 +162,10 @@ io.on('connection', (socket) => {
             }
         } else {
             chosenMove = findBestMove(game.board, 'O', 'X');
-            if (chosenMove === null) {
-                chosenMove = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-            }
+            if (chosenMove === null) chosenMove = emptyCells[Math.floor(Math.random() * emptyCells.length)];
         }
 
         game.board[chosenMove] = 'O';
-
         let winner = checkWin(game.board);
         if (winner || game.board.every(c => c !== null)) {
             handleBotGameOver(socket, game, winner);
@@ -196,20 +179,14 @@ io.on('connection', (socket) => {
         for (let i = 0; i < 9; i++) {
             if (board[i] === null) {
                 board[i] = botSym;
-                if (checkWin(board) === botSym) {
-                    board[i] = null;
-                    return i;
-                }
+                if (checkWin(board) === botSym) { board[i] = null; return i; }
                 board[i] = null;
             }
         }
         for (let i = 0; i < 9; i++) {
             if (board[i] === null) {
                 board[i] = playerSym;
-                if (checkWin(board) === playerSym) {
-                    board[i] = null;
-                    return i;
-                }
+                if (checkWin(board) === playerSym) { board[i] = null; return i; }
                 board[i] = null;
             }
         }
@@ -218,27 +195,22 @@ io.on('connection', (socket) => {
 
     function handleBotGameOver(socket, game, winnerSymbol) {
         let resultText = '';
-        if (winnerSymbol === 'X') {
-            resultText = 'تبریک! شما ربات را بردید 🎉 (بدون تغییر کاپ/سکه)';
-        } else if (winnerSymbol === 'O') {
-            resultText = 'ربات برنده شد! 🤖 (بدون تغییر کاپ/سکه)';
-        } else {
-            resultText = 'بازی مساوی شد! (بدون تغییر کاپ/سکه)';
-        }
+        if (winnerSymbol === 'X') resultText = 'تبریک! شما ربات را بردید 🎉 (بدون تغییر کاپ/سکه)';
+        else if (winnerSymbol === 'O') resultText = 'ربات برنده شد! 🤖 (بدون تغییر کاپ/سکه)';
+        else resultText = 'بازی مساوی شد! (بدون تغییر کاپ/سکه)';
 
-        socket.emit('bot_game_over', {
-            board: game.board,
-            resultText
-        });
-
+        socket.emit('bot_game_over', { board: game.board, resultText });
         delete botGames[socket.id];
     }
 
-    // بخش آنلاین (پشتیبانی از مسابقات ۳ دسته)
+    // بخش آنلاین
     socket.on('find_game', () => {
         const username = socket.data.username;
         if (!username || !db.users[username]) return;
         const player = db.users[username];
+
+        // اگر کاربر قبلاً در لیست انتظار است، دوباره اضافه نکنیم
+        if (waitingPlayers.includes(socket.id)) return;
 
         if (!player.isOwner) {
             if (player.coins < 10) {
@@ -251,8 +223,6 @@ io.on('connection', (socket) => {
             broadcastLeaderboard();
         }
 
-        if (waitingPlayers.includes(socket.id)) return;
-
         while (waitingPlayers.length > 0) {
             const opponentSocketId = waitingPlayers.shift();
             const opponentSocket = io.sockets.sockets.get(opponentSocketId);
@@ -260,7 +230,7 @@ io.on('connection', (socket) => {
             if (opponentSocketId !== socket.id && opponentSocket) {
                 const opponentUsername = opponentSocket.data.username;
                 if (opponentUsername && db.users[opponentUsername]) {
-                    const roomId = `room_${Date.now()}`;
+                    const roomId = `room_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
                     
                     activeGames[roomId] = {
                         players: [socket.id, opponentSocketId],
@@ -314,7 +284,9 @@ io.on('connection', (socket) => {
     });
 
     socket.on('surrender_game', ({ roomId }) => {
-        handleGameOverBySurrender(roomId, socket.id);
+        if (activeGames[roomId]) {
+            handleGameOverBySurrender(roomId, socket.id);
+        }
     });
 
     socket.on('make_move', ({ roomId, index }) => {
@@ -463,7 +435,6 @@ function processMove(roomId, socketId, index) {
             broadcastLeaderboard();
             delete activeGames[roomId];
         } else {
-            // رفتن به راند بعدی
             io.to(roomId).emit('round_over', {
                 board: game.board,
                 scores: game.scores,
@@ -474,7 +445,7 @@ function processMove(roomId, socketId, index) {
                 if (!activeGames[roomId]) return;
                 game.currentRound++;
                 game.board = Array(9).fill(null);
-                game.turn = game.players[(game.currentRound - 1) % 2]; // تغییر شروع‌کننده نوبت در راند جدید
+                game.turn = game.players[(game.currentRound - 1) % 2];
                 
                 const currentTurnName = game.turn === p1Socket ? u1 : u2;
 
