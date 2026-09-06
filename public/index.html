@@ -269,7 +269,6 @@
         .cell.x { color: #00f3ff; text-shadow: 0 0 15px rgba(0,243,255,0.6); }
         .cell.o { color: #ff007f; text-shadow: 0 0 15px rgba(255,0,127,0.6); }
 
-        /* استایل‌های بخش چالش دایره دوطرفه */
         .circle-game-container {
             display: flex;
             flex-wrap: wrap;
@@ -436,7 +435,7 @@
         <button class="btn btn-secondary" style="width: auto; padding: 8px 20px; background: #ff4757; color:#fff;" onclick="exitBotGame()">خروج از بازی</button>
     </div>
 
-    <!-- بخش چالش دایره با نمایش دو بوم در کنار هم -->
+    <!-- بخش چالش دایره با قابلیت شروع مجدد و پاکسازی کامل صفحه -->
     <div id="circle-game-section" class="game-layout hidden">
         <h2 style="font-family:'Lalezar'; color: #00f3ff; font-size: 24px; margin-bottom: 4px;">🌀 مسابقه رسم دایره: شما در برابر ربات</h2>
         <p id="circle-status-text" style="font-size: 13px; color: #94a3b8; margin-bottom: 10px;">دایره خود را در کادر سمت چپ بکشید...</p>
@@ -454,8 +453,9 @@
             </div>
         </div>
 
-        <div style="display: flex; gap: 10px; margin-top: 5px;">
+        <div style="display: flex; gap: 10px; margin-top: 5px; flex-wrap: wrap; justify-content: center;">
             <button id="evaluateCircleBtn" class="btn btn-primary" style="width: auto; padding: 10px 22px; background: #2ed573;" disabled onclick="evaluateCircleMatch()">ارزیابی و اعلام برنده ✅</button>
+            <button class="btn btn-primary" style="width: auto; padding: 10px 22px; background: #ffa502; color:#000;" onclick="resetCircleGame()">شروع مجدد 🔄</button>
             <button class="btn btn-secondary" style="width: auto; padding: 10px 22px; background: #ff4757; color:#fff;" onclick="exitCircleGame()">خروج ❌</button>
         </div>
     </div>
@@ -634,7 +634,7 @@
         }
     }
 
-    // منطق کامل بازی چالش دایره دوطرفه (شما و ربات) در فرانت‌اند
+    // منطق کامل چالش دایره دوطرفه به همراه دکمه شروع مجدد و پاکسازی بوم‌ها
     let userCircleCanvas, userCircleCtx;
     let robotCircleCanvas, robotCircleCtx;
     let isDrawingUserCircle = false;
@@ -650,6 +650,10 @@
     function exitCircleGame() {
         document.getElementById('circle-game-section').classList.add('hidden');
         document.getElementById('dashboard-section').classList.remove('hidden');
+    }
+
+    function resetCircleGame() {
+        initCircleCanvases();
     }
 
     function initCircleCanvases() {
@@ -669,7 +673,6 @@
         document.getElementById('userCircleScore').textContent = "امتیاز: -";
         document.getElementById('robotCircleScore').textContent = "امتیاز: -";
 
-        // رویدادهای ماوس و لمس برای کاربر
         userCircleCanvas.onmousedown = (e) => startUserDraw(e.clientX, e.clientY);
         userCircleCanvas.onmousemove = (e) => userDrawMove(e.clientX, e.clientY);
         userCircleCanvas.onmouseup = endUserDraw;
@@ -736,7 +739,6 @@
         }
     }
 
-    // الگوریتم ریاضی تحلیل دایره و امتیازدهی
     function analyzeCircle(points) {
         if (!points || points.length < 10) return { score: 0, cx: 140, cy: 140, radius: 40 };
 
@@ -755,7 +757,6 @@
 
         let score = Math.max(0, Math.min(100, Math.round(100 - (stdDev * 2.5))));
 
-        // بررسی میزان بسته شدن حلقه
         let start = points[0];
         let end = points[points.length - 1];
         let closureDist = Math.hypot(start.x - end.x, start.y - end.y);
@@ -766,7 +767,6 @@
         return { score, cx, cy, radius: avgRadius };
     }
 
-    // رسم دایره ربات بر اساس ابعاد دایره کاربر
     function drawRobotCircle(targetRadius, cx, cy) {
         clearCanvas(robotCircleCtx, robotCircleCanvas);
         robotCircleCtx.strokeStyle = '#ff007f';
@@ -775,7 +775,7 @@
         robotCircleCtx.beginPath();
 
         let rawPoints = [];
-        let errorFactor = 0.92 + Math.random() * 0.16; // دقت هوشمند ربات
+        let errorFactor = 0.92 + Math.random() * 0.16;
         let finalRadius = Math.max(30, Math.min(110, targetRadius * errorFactor));
 
         for (let angle = 0; angle <= Math.PI * 2; angle += 0.04) {
