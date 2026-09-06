@@ -269,12 +269,12 @@
         .cell.x { color: #00f3ff; text-shadow: 0 0 15px rgba(0,243,255,0.6); }
         .cell.o { color: #ff007f; text-shadow: 0 0 15px rgba(255,0,127,0.6); }
 
-        /* استایل‌های بزرگ و استاندارد بازی نقطه و خط */
+        /* استایل‌های استاندارد بازی نقطه و خط کلاسیک */
         .dots-board-container {
-            background: rgba(12, 12, 24, 0.95);
-            border: 2px solid rgba(0, 243, 255, 0.4);
-            border-radius: 24px;
-            padding: 24px;
+            background: #ffffff; /* پس‌زمینه سفید مشابه عکس مرجع شما */
+            border: 3px solid #00f3ff;
+            border-radius: 20px;
+            padding: 20px;
             position: relative;
             box-shadow: 0 15px 50px rgba(0,0,0,0.9);
             margin: 10px 0;
@@ -288,56 +288,59 @@
             position: relative;
         }
 
+        /* نقطه‌های سیاه کوچک دقیقاً مثل عکس مرجع */
         .dot-item {
-            width: 14px;
-            height: 14px;
-            background: #00f3ff;
+            width: 10px;
+            height: 10px;
+            background: #000000;
             border-radius: 50%;
-            box-shadow: 0 0 10px #00f3ff;
             justify-self: center;
             align-self: center;
         }
 
+        /* خط افقی مابین نقاط */
         .dot-line-h {
-            height: 16px;
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 8px;
+            height: 12px;
+            background: #e2e8f0;
+            border-radius: 6px;
             cursor: pointer;
             transition: all 0.2s;
             align-self: center;
             width: 100%;
         }
 
-        .dot-line-h:hover { background: rgba(0, 243, 255, 0.5); box-shadow: 0 0 10px rgba(0, 243, 255, 0.4); }
-        .dot-line-h.active-player { background: #00f3ff; box-shadow: 0 0 12px #00f3ff; cursor: default; }
-        .dot-line-h.active-bot { background: #ff007f; box-shadow: 0 0 12px #ff007f; cursor: default; }
+        .dot-line-h:hover { background: #cbd5e1; }
+        .dot-line-h.active-player { background: #00f3ff; box-shadow: 0 0 8px #00f3ff; cursor: default; }
+        .dot-line-h.active-bot { background: #ff007f; box-shadow: 0 0 8px #ff007f; cursor: default; }
 
+        /* خط عمودی مابین نقاط */
         .dot-line-v {
-            width: 16px;
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 8px;
+            width: 12px;
+            background: #e2e8f0;
+            border-radius: 6px;
             cursor: pointer;
             transition: all 0.2s;
             justify-self: center;
             height: 100%;
         }
 
-        .dot-line-v:hover { background: rgba(0, 243, 255, 0.5); box-shadow: 0 0 10px rgba(0, 243, 255, 0.4); }
-        .dot-line-v.active-player { background: #00f3ff; box-shadow: 0 0 12px #00f3ff; cursor: default; }
-        .dot-line-v.active-bot { background: #ff007f; box-shadow: 0 0 12px #ff007f; cursor: default; }
+        .dot-line-v:hover { background: #cbd5e1; }
+        .dot-line-v.active-player { background: #00f3ff; box-shadow: 0 0 8px #00f3ff; cursor: default; }
+        .dot-line-v.active-bot { background: #ff007f; box-shadow: 0 0 8px #ff007f; cursor: default; }
 
+        /* خانه مربعی مابین خطوط */
         .dot-box {
             background: transparent;
-            border-radius: 10px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'Lalezar', cursive;
-            font-size: 20px;
+            font-size: 16px;
             transition: background 0.3s;
         }
-        .dot-box.player { background: rgba(0, 243, 255, 0.3); color: #00f3ff; text-shadow: 0 0 10px #00f3ff; }
-        .dot-box.bot { background: rgba(255, 0, 127, 0.3); color: #ff007f; text-shadow: 0 0 10px #ff007f; }
+        .dot-box.player { background: rgba(0, 243, 255, 0.25); color: #0056b3; }
+        .dot-box.bot { background: rgba(255, 0, 127, 0.25); color: #90003f; }
 
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -426,7 +429,7 @@
                     <button class="btn btn-bot-med" style="padding: 10px; font-size: 13px;" onclick="startBotGame('medium')">متوسط</button>
                     <button class="btn btn-bot-hard" style="padding: 10px; font-size: 13px;" onclick="startBotGame('hard')">سخت</button>
                 </div>
-                <button class="btn btn-dots-bot" style="padding: 10px; font-size: 14px; margin-top: 4px;" onclick="startDotsBotGame()">چالش نقطه خط بزرگ با ربات ⚝</button>
+                <button class="btn btn-dots-bot" style="padding: 10px; font-size: 14px; margin-top: 4px;" onclick="startDotsBotGame()">چالش نقطه خط استاندارد با ربات ⚝</button>
             </div>
         </div>
     </div>
@@ -469,9 +472,9 @@
         <button class="btn btn-secondary" style="width: auto; padding: 8px 20px; background: #ff4757; color:#fff;" onclick="exitBotGame()">خروج از بازی</button>
     </div>
 
-    <!-- بخش نقطه و خط بزرگ با طراحی عریض و استاندارد -->
+    <!-- بخش نقطه و خط استاندارد شبیه به عکس مرجع -->
     <div id="dots-bot-game-section" class="game-layout hidden">
-        <h2 style="font-family:'Lalezar'; color: #ff007f; font-size: 24px; margin-bottom: 4px;">چالش نقطه و خط بزرگ ⚝</h2>
+        <h2 style="font-family:'Lalezar'; color: #ff007f; font-size: 24px; margin-bottom: 4px;">چالش نقطه و خط ⚝</h2>
         <div id="dots-scoreboard" style="font-family:'Lalezar'; font-size: 18px; margin-bottom: 8px; display: flex; gap: 25px; background: rgba(12,12,24,0.85); border: 1px solid rgba(255,0,127,0.4); padding: 8px 20px; border-radius: 14px;">
             <span style="color: #00f3ff;">امتیاز شما: <span id="dots-p-score">0</span></span>
             <span style="color: #ff007f;">امتیاز ربات: <span id="dots-b-score">0</span></span>
@@ -659,7 +662,7 @@
         }
     }
 
-    // ==================== مدیریت نقطه و خط بزرگ و بازی کامل ربات ====================
+    // ==================== مدیریت نقطه و خط استاندارد 8x8 ====================
     let dotsRows = 8;
     let dotsCols = 8;
     let hLinesState = [];
@@ -697,12 +700,12 @@
 
         const grid = document.getElementById('dots-grid');
         let colTemplate = '';
-        for (let c = 0; c < dotsCols; c++) { colTemplate += ' 14px 55px'; }
-        grid.style.gridTemplateColumns = '14px' + colTemplate;
+        for (let c = 0; c < dotsCols; c++) { colTemplate += ' 10px 50px'; }
+        grid.style.gridTemplateColumns = '10px' + colTemplate;
 
         let rowTemplate = '';
-        for (let r = 0; r < dotsRows; r++) { rowTemplate += ' 14px 55px'; }
-        grid.style.gridTemplateRows = '14px' + rowTemplate;
+        for (let r = 0; r < dotsRows; r++) { rowTemplate += ' 10px 50px'; }
+        grid.style.gridTemplateRows = '10px' + rowTemplate;
 
         grid.innerHTML = '';
         let hIdx = 0, vIdx = 0, bIdx = 0;
@@ -952,4 +955,3 @@
 
 </body>
 </html>
-```[cite: 4]
