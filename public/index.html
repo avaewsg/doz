@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DOZX | پلتفرم حرفه‌ای دوز و نقطه‌خط آنلاین</title>
+    <title>DOZX | پلتفرم حرفه‌ای دوز آنلاین</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@300;400;700;900&display=swap');
 
@@ -268,80 +268,6 @@
         .cell.x { color: #00f3ff; text-shadow: 0 0 15px rgba(0,243,255,0.6); }
         .cell.o { color: #ff007f; text-shadow: 0 0 15px rgba(255,0,127,0.6); }
 
-        /* استایل‌های مربوط به اسکین‌ها */
-        .skins-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-        }
-        .skin-option {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1.5px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .skin-option.active {
-            border-color: #00f3ff;
-            background: rgba(0, 243, 255, 0.1);
-            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
-        }
-        .skin-option span { font-size: 11px; color: #cbd5e1; display: block; margin-top: 4px; font-family: 'Lalezar'; }
-
-        /* استایل‌های بخش بازی نقطه‌خط (Dots and Boxes) */
-        .dots-board {
-            display: grid;
-            grid-template-columns: repeat(3, 40px 60px) 40px;
-            grid-template-rows: repeat(3, 40px 60px) 40px;
-            gap: 2px;
-            background: rgba(12, 12, 25, 0.9);
-            border: 2px solid rgba(0, 243, 255, 0.4);
-            border-radius: 16px;
-            padding: 10px;
-            margin: 15px 0;
-            box-shadow: 0 0 20px rgba(0,243,255,0.15);
-        }
-        .dot {
-            width: 14px; height: 14px;
-            background: #00f3ff;
-            border-radius: 50%;
-            margin: auto;
-            box-shadow: 0 0 8px #00f3ff;
-        }
-        .line-h {
-            height: 14px;
-            background: rgba(255, 255, 255, 0.1);
-            cursor: pointer;
-            border-radius: 6px;
-            margin: auto 0;
-            transition: all 0.2s;
-        }
-        .line-v {
-            width: 14px;
-            background: rgba(255, 255, 255, 0.1);
-            cursor: pointer;
-            border-radius: 6px;
-            margin: 0 auto;
-            transition: all 0.2s;
-        }
-        .line-h:hover, .line-v:hover { background: rgba(0, 243, 255, 0.5); }
-        .line-h.active { background: #00f3ff; box-shadow: 0 0 10px #00f3ff; }
-        .line-v.active { background: #00f3ff; box-shadow: 0 0 10px #00f3ff; }
-        
-        .box-cell {
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Lalezar';
-            font-size: 22px;
-        }
-        .box-cell.p1 { background: rgba(0, 243, 255, 0.2); color: #00f3ff; text-shadow: 0 0 10px #00f3ff; }
-        .box-cell.p2 { background: rgba(255, 0, 127, 0.2); color: #ff007f; text-shadow: 0 0 10px #ff007f; }
-
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 100;
@@ -372,7 +298,7 @@
     <div id="login-section" class="login-wrapper">
         <div class="auth-card">
             <h1>DOZX</h1>
-            <p>پلتفرم آنلاین و حرفه‌ای بازی دوز و نقطه‌خط</p>
+            <p>پلتفرم آنلاین و حرفه‌ای بازی دوز</p>
             <div class="input-group"><input type="text" id="username-input" placeholder="نام کاربری"></div>
             <div class="input-group"><input type="password" id="password-input" placeholder="رمز عبور"></div>
             <button class="btn btn-primary" onclick="registerUser()">ثبت‌نام حساب جدید 📝</button>
@@ -416,39 +342,19 @@
         </div>
 
         <div class="right-sidebar">
-            <!-- بخش انتخاب اسکین‌ها -->
             <div class="dash-card" style="gap: 10px;">
-                <div class="dash-title">🎨 انتخاب اسکین دوز</div>
-                <div class="skins-grid">
-                    <div class="skin-option active" id="skin-classic" onclick="selectSkin('classic', this)">
-                        <div style="font-size: 18px;">❌⭕</div>
-                        <span>عادی</span>
-                    </div>
-                    <div class="skin-option" id="skin-fire" onclick="selectSkin('fire', this)">
-                        <div style="font-size: 18px;">🔥💧</div>
-                        <span>آتش و آب</span>
-                    </div>
-                    <div class="skin-option" id="skin-neon" onclick="selectSkin('neon', this)">
-                        <div style="font-size: 18px;">⚡💎</div>
-                        <span>نئون</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="dash-card" style="gap: 10px;">
-                <div class="dash-title">⚔️ بخش آنلاین دوز</div>
+                <div class="dash-title">⚔️ بخش آنلاین (مسابقه ۳ دسته)</div>
                 <p style="font-size: 11px; color: #94a3b8;">ورودی: ۱۰ سکه | جایزه: ۸۰ سکه</p>
                 <button class="btn btn-primary" style="margin:0;" onclick="findGame()">شروع نبرد آنلاین</button>
             </div>
 
             <div class="dash-card" style="gap: 10px;">
-                <div class="dash-title">🤖 بازی با ربات</div>
+                <div class="dash-title">🤖 بازی با ربات (رایگان)</div>
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
-                    <button class="btn btn-bot-easy" style="padding: 10px; font-size: 13px;" onclick="startBotGame('easy')">دوز آسان</button>
-                    <button class="btn btn-bot-med" style="padding: 10px; font-size: 13px;" onclick="startBotGame('medium')">دوز متوسط</button>
-                    <button class="btn btn-bot-hard" style="padding: 10px; font-size: 13px;" onclick="startBotGame('hard')">دوز سخت</button>
+                    <button class="btn btn-bot-easy" style="padding: 10px; font-size: 13px;" onclick="startBotGame('easy')">آسان</button>
+                    <button class="btn btn-bot-med" style="padding: 10px; font-size: 13px;" onclick="startBotGame('medium')">متوسط</button>
+                    <button class="btn btn-bot-hard" style="padding: 10px; font-size: 13px;" onclick="startBotGame('hard')">سخت</button>
                 </div>
-                <button class="btn btn-primary" style="background: linear-gradient(135deg, #ff007f, #7000ff); margin-top: 4px;" onclick="startDotsGame()">🌐 بازی نقطه‌خط با ربات</button>
             </div>
         </div>
     </div>
@@ -461,7 +367,6 @@
         </div>
     </div>
 
-    <!-- بخش بازی دوز آنلاین -->
     <div id="game-section" class="game-layout hidden">
         <div id="scoreboard-header" style="background: rgba(12,12,24,0.8); border: 1px solid rgba(0,243,255,0.3); padding: 8px 20px; border-radius: 16px; font-family:'Lalezar'; font-size: 18px; margin-bottom: 10px; display: flex; gap: 15px; align-items: center;">
             <span id="match-score-text" style="color: #ffeb3b;">امتیاز: ۰ - ۰</span> | <span id="round-text" style="color: #00f3ff;">راند ۱ از ۳</span>
@@ -481,7 +386,6 @@
         <button class="btn btn-secondary" style="width: auto; padding: 8px 20px; background: #ff4757; color:#fff;" onclick="confirmSurrender()">خروج / پذیرش باخت</button>
     </div>
 
-    <!-- بخش بازی دوز با ربات -->
     <div id="bot-game-section" class="game-layout hidden">
         <h2 style="font-family:'Lalezar'; color: #2ed573; font-size: 22px; margin-bottom: 5px;">بازی با ربات هوشمند 🤖</h2>
         <div class="board" id="bot-game-board">
@@ -492,34 +396,12 @@
         <div id="bot-turn-indicator" style="font-family: 'Lalezar'; font-size: 18px; color: #ffeb3b; margin-bottom: 10px;">نوبت شماست!</div>
         <button class="btn btn-secondary" style="width: auto; padding: 8px 20px; background: #ff4757; color:#fff;" onclick="exitBotGame()">خروج از بازی</button>
     </div>
-
-    <!-- بخش جدید بازی نقطه‌خط (Dots and Boxes) -->
-    <div id="dots-game-section" class="game-layout hidden">
-        <h2 style="font-family:'Lalezar'; color: #00f3ff; font-size: 22px; margin-bottom: 5px;">بازی نقطه‌خط (تخصصی) 🧩</h2>
-        <div id="dots-score-board" style="font-family:'Lalezar'; font-size: 16px; margin-bottom: 5px; color: #ffeb3b;">
-            شما: <span id="dots-p1-score">0</span> | ربات: <span id="dots-p2-score">0</span>
-        </div>
-        <div class="dots-board" id="dots-board-grid">
-            <!-- ردیف 0 -->
-            <div class="dot"></div><div class="line-h" data-type="h" data-r="0" data-c="0" onclick="handleDotLineClick(0, 0)"></div><div class="dot"></div><div class="line-h" data-type="h" data-r="0" data-c="1" onclick="handleDotLineClick(0, 1)"></div><div class="dot"></div>
-            <!-- ردیف 1 -->
-            <div class="line-v" data-type="v" data-r="0" data-c="0" onclick="handleDotLineClick(1, 0)"></div><div class="box-cell" id="box-0-0"></div><div class="line-v" data-type="v" data-r="0" data-c="1" onclick="handleDotLineClick(1, 1)"></div><div class="box-cell" id="box-0-1"></div><div class="line-v" data-type="v" data-r="0" data-c="2" onclick="handleDotLineClick(1, 2)"></div>
-            <!-- ردیف 2 -->
-            <div class="dot"></div><div class="line-h" data-type="h" data-r="1" data-c="0" onclick="handleDotLineClick(2, 0)"></div><div class="dot"></div><div class="line-h" data-type="h" data-r="1" data-c="1" onclick="handleDotLineClick(2, 1)"></div><div class="dot"></div>
-            <!-- ردیف 3 -->
-            <div class="line-v" data-type="v" data-r="1" data-c="0" onclick="handleDotLineClick(3, 0)"></div><div class="box-cell" id="box-1-0"></div><div class="line-v" data-type="v" data-r="1" data-c="1" onclick="handleDotLineClick(3, 1)"></div><div class="box-cell" id="box-1-1"></div><div class="line-v" data-type="v" data-r="1" data-c="2" onclick="handleDotLineClick(3, 2)"></div>
-            <!-- ردیف 4 -->
-            <div class="dot"></div><div class="line-h" data-type="h" data-r="2" data-c="0" onclick="handleDotLineClick(4, 0)"></div><div class="dot"></div><div class="line-h" data-type="h" data-r="2" data-c="1" onclick="handleDotLineClick(4, 1)"></div><div class="dot"></div>
-        </div>
-        <div id="dots-turn-indicator" style="font-family: 'Lalezar'; font-size: 18px; color: #ffeb3b; margin-bottom: 10px;">نوبت شماست</div>
-        <button class="btn btn-secondary" style="width: auto; padding: 8px 20px; background: #ff4757; color:#fff;" onclick="exitDotsGame()">خروج از بازی</button>
-    </div>
 </div>
 
 <div id="welcome-modal" class="modal hidden">
     <div class="modal-content">
         <h3 style="font-family: 'Lalezar', cursive; color: #00f3ff; margin-bottom: 10px; font-size: 22px;">🎮 به DOZX خوش آمدید!</h3>
-        <p style="font-size: 12px; line-height: 1.7; color: #cbd5e1; margin-bottom: 18px;">بازی‌های آنلاین دوز و نقطه‌خط با بالاترین کیفیت و امکانات پیشرفته برای سرگرمی شما آماده است.<br>👨‍💻 توسعه‌یافته با بالاترین استانداردها.</p>
+        <p style="font-size: 12px; line-height: 1.7; color: #cbd5e1; margin-bottom: 18px;">بازی آنلاین دوز با دوستان و بازیکنان دیگر، سریع، ساده و سرگرم‌کننده.<br>👨‍💻 توسعه‌یافته با بالاترین کیفیت برای تجربه‌ای بی‌نظیر.</p>
         <button class="btn btn-primary" style="background: #7000ff; margin-bottom: 8px;" onclick="closeWelcomeModal()">ورود به داشبورد 🚀</button>
     </div>
 </div>
@@ -537,29 +419,6 @@
     const socket = io();
     let currentRoomId = null;
     let matchPlayersInfo = {};
-    
-    // مدیریت اسکین‌ها
-    let currentSkin = 'classic';
-    const skinSymbols = {
-        classic: { X: 'X', O: 'O' },
-        fire:    { X: '🔥', O: '💧' },
-        neon:    { X: '⚡', O: '💎' }
-    };
-
-    function selectSkin(skinName, element) {
-        currentSkin = skinName;
-        document.querySelectorAll('.skin-option').forEach(el => el.classList.remove('active'));
-        element.classList.add('active');
-    }
-
-    function getFormattedSymbol(val) {
-        if (!val) return '';
-        if (skinSymbols[currentSkin]) {
-            if (val === 'X') return skinSymbols[currentSkin].X;
-            if (val === 'O') return skinSymbols[currentSkin].O;
-        }
-        return val;
-    }
 
     function registerUser() {
         const username = document.getElementById('username-input').value;
@@ -705,203 +564,17 @@
     function renderBotBoard(board) {
         const cells = document.querySelectorAll('#bot-game-board .cell');
         for (let i = 0; i < 9; i++) {
-            cells[i].innerText = getFormattedSymbol(board[i]);
+            cells[i].innerText = board[i] || '';
             cells[i].className = 'cell';
             if (board[i] === 'X') cells[i].classList.add('x');
             if (board[i] === 'O') cells[i].classList.add('o');
         }
     }
 
-    // منطق بازی نقطه‌خط (کد فرانت‌اند هوشمند)
-    let dotsState = {
-        hLines: Array(3).fill(0).map(() => Array(2).fill(false)),
-        vLines: Array(2).fill(0).map(() => Array(3).fill(false)),
-        boxes: Array(2).fill(0).map(() => Array(2).fill(null)),
-        scores: { p1: 0, p2: 0 },
-        turn: 'p1' // p1 مخفف شما، p2 ربات
-    };
-
-    function startDotsGame() {
-        document.getElementById('dashboard-section').classList.add('hidden');
-        document.getElementById('dots-game-section').classList.remove('hidden');
-        resetDotsGameData();
-        renderDotsBoard();
-    }
-
-    function exitDotsGame() {
-        document.getElementById('dots-game-section').classList.add('hidden');
-        document.getElementById('dashboard-section').classList.remove('hidden');
-    }
-
-    function resetDotsGameData() {
-        dotsState.hLines = Array(3).fill(0).map(() => Array(2).fill(false));
-        dotsState.vLines = Array(2).fill(0).map(() => Array(3).fill(false));
-        dotsState.boxes = Array(2).fill(0).map(() => Array(2).fill(null));
-        dotsState.scores = { p1: 0, p2: 0 };
-        dotsState.turn = 'p1';
-    }
-
-    function handleDotLineClick(typeGroup, r, c) {
-        if (dotsState.turn !== 'p1') return;
-        
-        let valid = false;
-        if (typeGroup === 0 || typeGroup === 2 || typeGroup === 4) {
-            // افقی
-            let rIdx = typeGroup === 0 ? 0 : (typeGroup === 2 ? 1 : 2);
-            if (!dotsState.hLines[rIdx][r]) {
-                dotsState.hLines[rIdx][r] = true;
-                valid = true;
-            }
-        } else {
-            // عمودی
-            let rIdx = typeGroup === 1 ? 0 : 1;
-            if (!dotsState.vLines[rIdx][r]) {
-                dotsState.vLines[rIdx][r] = true;
-                valid = true;
-            }
-        }
-
-        if (valid) {
-            let scored = checkCompletedBoxes('p1');
-            renderDotsBoard();
-            if (checkGameOverDots()) return;
-
-            if (!scored) {
-                dotsState.turn = 'p2';
-                document.getElementById('dots-turn-indicator').innerText = 'نوبت ربات...';
-                setTimeout(botDotsMove, 700);
-            } else {
-                document.getElementById('dots-turn-indicator').innerText = 'امتیاز گرفتی! دوباره نوبت شماست';
-            }
-        }
-    }
-
-    function checkCompletedBoxes(player) {
-        let scored = false;
-        // جدول ۲ در ۲ بکس داریم
-        for (let r = 0; r < 2; r++) {
-            for (let c = 0; c < 2; c++) {
-                if (dotsState.boxes[r][c] === null) {
-                    let top = dotsState.hLines[r][c];
-                    let bottom = dotsState.hLines[r+1][c];
-                    let left = dotsState.vLines[r][c];
-                    let right = dotsState.vLines[r][c+1];
-                    if (top && bottom && left && right) {
-                        dotsState.boxes[r][c] = player;
-                        dotsState.scores[player]++;
-                        scored = true;
-                    }
-                }
-            }
-        }
-        return scored;
-    }
-
-    function botDotsMove() {
-        // جمع‌آوری خطوط خالی برای حرکت ربات
-        let availableLines = [];
-        for (let r = 0; r < 3; r++) {
-            for (let c = 0; c < 2; c++) {
-                if (!dotsState.hLines[r][c]) availableLines.push({ type: 'h', r, c });
-            }
-        }
-        for (let r = 0; r < 2; r++) {
-            for (let c = 0; c < 3; c++) {
-                if (!dotsState.vLines[r][c]) availableLines.push({ type: 'v', r, c });
-            }
-        }
-
-        if (availableLines.length > 0) {
-            let move = availableLines[Math.floor(Math.random() * availableLines.length)];
-            if (move.type === 'h') dotsState.hLines[move.r][move.c] = true;
-            else dotsState.vLines[move.r][move.c] = true;
-
-            let scored = checkCompletedBoxes('p2');
-            renderDotsBoard();
-            if (checkGameOverDots()) return;
-
-            if (scored) {
-                document.getElementById('dots-turn-indicator').innerText = 'ربات امتیاز گرفت و دوباره بازی می‌کند...';
-                setTimeout(botDotsMove, 700);
-            } else {
-                dotsState.turn = 'p1';
-                document.getElementById('dots-turn-indicator').innerText = 'نوبت شماست';
-            }
-        }
-    }
-
-    function checkGameOverDots() {
-        let totalBoxes = 4;
-        let filled = dotsState.scores.p1 + dotsState.scores.p2;
-        if (filled === totalBoxes) {
-            let msg = '';
-            if (dotsState.scores.p1 > dotsState.scores.p2) msg = '🎉 تبریک! شما برنده شدید!';
-            else if (dotsState.scores.p1 < dotsState.scores.p2) msg = '🤖 ربات برنده شد! تلاش مجدد...';
-            else msg = '🤝 بازی مساوی شد!';
-            
-            setTimeout(() => {
-                alert(msg);
-                exitDotsGame();
-            }, 300);
-            return true;
-        }
-        return false;
-    }
-
-    function renderDotsBoard() {
-        document.getElementById('dots-p1-score').innerText = dotsState.scores.p1;
-        document.getElementById('dots-p2-score').innerText = dotsState.scores.p2;
-
-        // به‌روزرسانی خطوط افقی
-        const hElems = document.querySelectorAll('.line-h');
-        let hIdx = 0;
-        for (let r = 0; r < 3; r++) {
-            for (let c = 0; c < 2; c++) {
-                if (hElems[hIdx]) {
-                    if (dotsState.hLines[r][c]) hElems[hIdx].classList.add('active');
-                    else hElems[hIdx].classList.remove('active');
-                }
-                hIdx++;
-            }
-        }
-
-        // به‌روزرسانی خطوط عمودی
-        const vElems = document.querySelectorAll('.line-v');
-        let vIdx = 0;
-        for (let r = 0; r < 2; r++) {
-            for (let c = 0; c < 3; c++) {
-                if (vElems[vIdx]) {
-                    if (dotsState.vLines[r][c]) vElems[vIdx].classList.add('active');
-                    else vElems[vIdx].classList.remove('active');
-                }
-                vIdx++;
-            }
-        }
-
-        // به‌روزرسانی خانه‌ها (Boxes)
-        for (let r = 0; r < 2; r++) {
-            for (let c = 0; c < 2; c++) {
-                let boxEl = document.getElementById(`box-${r}-${c}`);
-                if (boxEl) {
-                    boxEl.className = 'box-cell';
-                    if (dotsState.boxes[r][c] === 'p1') {
-                        boxEl.classList.add('p1');
-                        boxEl.innerText = 'شما';
-                    } else if (dotsState.boxes[r][c] === 'p2') {
-                        boxEl.classList.add('p2');
-                        boxEl.innerText = 'ربات';
-                    } else {
-                        boxEl.innerText = '';
-                    }
-                }
-            }
-        }
-    }
-
     function findGame() {
         document.getElementById('dashboard-section').classList.add('hidden');
         document.getElementById('waiting-section').classList.remove('hidden');
-        renderBoard(Array(9).fill(null)); 
+        renderBoard(Array(9).fill(null));
         socket.emit('find_game');
     }
     
@@ -918,11 +591,12 @@
         document.getElementById('waiting-section').classList.add('hidden');
         document.getElementById('game-section').classList.remove('hidden');
         
-        const p1Id = Object.keys(d.players)[0];
-        const p2Id = Object.keys(d.players)[1];
+        const playerIds = Object.keys(d.players);
+        const p1Id = playerIds[0];
+        const p2Id = playerIds[1];
         
-        document.getElementById('p1-name').innerText = `${d.players[p1Id]} (${getFormattedSymbol('X')})`;
-        document.getElementById('p2-name').innerText = `${d.players[p2Id]} (${getFormattedSymbol('O')})`;
+        document.getElementById('p1-name').innerText = `${d.players[p1Id]} (X)`;
+        document.getElementById('p2-name').innerText = `${d.players[p2Id]} (O)`;
         
         updateGameUIState(d.board, d.turnName, d.scores, d.round || 1);
     });
@@ -945,7 +619,7 @@
         updateScoreboard(d.scores);
         setTimeout(() => {
             alert(d.isDraw ? '🤝 مساوی کل مسابقه!' : `🏆 برنده نهایی مسابقه: ${d.winnerName}`);
-            currentRoomId = null; 
+            currentRoomId = null;
             matchPlayersInfo = {};
             document.getElementById('game-section').classList.add('hidden');
             document.getElementById('dashboard-section').classList.remove('hidden');
@@ -987,11 +661,11 @@
     function renderBoard(board) {
         const cells = document.querySelectorAll('#game-board .cell');
         for (let i = 0; i < 9; i++) {
-            const rawVal = (board && board[i]) ? board[i] : '';
-            cells[i].innerText = getFormattedSymbol(rawVal);
+            const val = (board && board[i]) ? board[i] : '';
+            cells[i].innerText = val;
             cells[i].className = 'cell';
-            if (rawVal === 'X') cells[i].classList.add('x');
-            if (rawVal === 'O') cells[i].classList.add('o');
+            if (val === 'X') cells[i].classList.add('x');
+            if (val === 'O') cells[i].classList.add('o');
         }
     }
 </script>
