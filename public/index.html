@@ -269,18 +269,18 @@
         .cell.x { color: #00f3ff; text-shadow: 0 0 15px rgba(0,243,255,0.6); }
         .cell.o { color: #ff007f; text-shadow: 0 0 15px rgba(255,0,127,0.6); }
 
-        /* استایل‌های بخش نقطه و خط بزرگ با خطوط انتخاب‌پذیر */
+        /* استایل‌های بزرگ و استاندارد بازی نقطه و خط */
         .dots-board-container {
-            background: rgba(10, 10, 20, 0.9);
-            border: 2px solid rgba(255, 0, 127, 0.4);
-            border-radius: 20px;
-            padding: 16px;
+            background: rgba(12, 12, 24, 0.95);
+            border: 2px solid rgba(0, 243, 255, 0.4);
+            border-radius: 24px;
+            padding: 24px;
             position: relative;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.9);
             margin: 10px 0;
             overflow: auto;
             max-width: 95vw;
-            max-height: 70vh;
+            max-height: 75vh;
         }
 
         .dots-grid {
@@ -289,55 +289,55 @@
         }
 
         .dot-item {
-            width: 10px;
-            height: 10px;
+            width: 14px;
+            height: 14px;
             background: #00f3ff;
             border-radius: 50%;
-            box-shadow: 0 0 8px #00f3ff;
+            box-shadow: 0 0 10px #00f3ff;
             justify-self: center;
             align-self: center;
         }
 
         .dot-line-h {
-            height: 14px;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 7px;
+            height: 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.2s;
             align-self: center;
             width: 100%;
         }
 
-        .dot-line-h:hover { background: rgba(0, 243, 255, 0.6); }
-        .dot-line-h.active-player { background: #00f3ff; box-shadow: 0 0 10px #00f3ff; cursor: default; }
-        .dot-line-h.active-bot { background: #ff007f; box-shadow: 0 0 10px #ff007f; cursor: default; }
+        .dot-line-h:hover { background: rgba(0, 243, 255, 0.5); box-shadow: 0 0 10px rgba(0, 243, 255, 0.4); }
+        .dot-line-h.active-player { background: #00f3ff; box-shadow: 0 0 12px #00f3ff; cursor: default; }
+        .dot-line-h.active-bot { background: #ff007f; box-shadow: 0 0 12px #ff007f; cursor: default; }
 
         .dot-line-v {
-            width: 14px;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 7px;
+            width: 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.2s;
             justify-self: center;
             height: 100%;
         }
 
-        .dot-line-v:hover { background: rgba(0, 243, 255, 0.6); }
-        .dot-line-v.active-player { background: #00f3ff; box-shadow: 0 0 10px #00f3ff; cursor: default; }
-        .dot-line-v.active-bot { background: #ff007f; box-shadow: 0 0 10px #ff007f; cursor: default; }
+        .dot-line-v:hover { background: rgba(0, 243, 255, 0.5); box-shadow: 0 0 10px rgba(0, 243, 255, 0.4); }
+        .dot-line-v.active-player { background: #00f3ff; box-shadow: 0 0 12px #00f3ff; cursor: default; }
+        .dot-line-v.active-bot { background: #ff007f; box-shadow: 0 0 12px #ff007f; cursor: default; }
 
         .dot-box {
             background: transparent;
-            border-radius: 6px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'Lalezar', cursive;
-            font-size: 18px;
+            font-size: 20px;
             transition: background 0.3s;
         }
-        .dot-box.player { background: rgba(0, 243, 255, 0.35); color: #00f3ff; text-shadow: 0 0 8px #00f3ff; }
-        .dot-box.bot { background: rgba(255, 0, 127, 0.35); color: #ff007f; text-shadow: 0 0 8px #ff007f; }
+        .dot-box.player { background: rgba(0, 243, 255, 0.3); color: #00f3ff; text-shadow: 0 0 10px #00f3ff; }
+        .dot-box.bot { background: rgba(255, 0, 127, 0.3); color: #ff007f; text-shadow: 0 0 10px #ff007f; }
 
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -469,20 +469,20 @@
         <button class="btn btn-secondary" style="width: auto; padding: 8px 20px; background: #ff4757; color:#fff;" onclick="exitBotGame()">خروج از بازی</button>
     </div>
 
-    <!-- بخش نقطه و خط بزرگ با کلیک روی خطوط و بازی فعال ربات -->
+    <!-- بخش نقطه و خط بزرگ با طراحی عریض و استاندارد -->
     <div id="dots-bot-game-section" class="game-layout hidden">
-        <h2 style="font-family:'Lalezar'; color: #ff007f; font-size: 22px; margin-bottom: 2px;">چالش نقطه و خط بزرگ (انتخاب خطوط) ⚝</h2>
-        <div id="dots-scoreboard" style="font-family:'Lalezar'; font-size: 17px; margin-bottom: 5px; display: flex; gap: 20px; background: rgba(12,12,24,0.8); border: 1px solid rgba(255,0,127,0.3); padding: 6px 16px; border-radius: 12px;">
+        <h2 style="font-family:'Lalezar'; color: #ff007f; font-size: 24px; margin-bottom: 4px;">چالش نقطه و خط بزرگ ⚝</h2>
+        <div id="dots-scoreboard" style="font-family:'Lalezar'; font-size: 18px; margin-bottom: 8px; display: flex; gap: 25px; background: rgba(12,12,24,0.85); border: 1px solid rgba(255,0,127,0.4); padding: 8px 20px; border-radius: 14px;">
             <span style="color: #00f3ff;">امتیاز شما: <span id="dots-p-score">0</span></span>
             <span style="color: #ff007f;">امتیاز ربات: <span id="dots-b-score">0</span></span>
         </div>
-        <div id="dots-turn-indicator" style="font-family:'Lalezar'; font-size: 18px; color: #ffeb3b; margin-bottom: 8px;">نوبت: شما</div>
+        <div id="dots-turn-indicator" style="font-family:'Lalezar'; font-size: 19px; color: #ffeb3b; margin-bottom: 10px;">نوبت: شما</div>
         
         <div class="dots-board-container">
             <div id="dots-grid" class="dots-grid"></div>
         </div>
 
-        <button class="btn btn-secondary" style="width: auto; padding: 8px 20px; background: #ff4757; color:#fff; margin-top: 10px;" onclick="exitDotsBotGame()">خروج از بازی</button>
+        <button class="btn btn-secondary" style="width: auto; padding: 10px 24px; background: #ff4757; color:#fff; margin-top: 12px;" onclick="exitDotsBotGame()">خروج از بازی</button>
     </div>
 </div>
 
@@ -660,8 +660,8 @@
     }
 
     // ==================== مدیریت نقطه و خط بزرگ و بازی کامل ربات ====================
-    let dotsRows = 7;
-    let dotsCols = 7;
+    let dotsRows = 8;
+    let dotsCols = 8;
     let hLinesState = [];
     let vLinesState = [];
     let boxesState = [];
@@ -673,9 +673,8 @@
         document.getElementById('dashboard-section').classList.add('hidden');
         document.getElementById('dots-bot-game-section').classList.remove('hidden');
         
-        // ساخت شبکه ۷ در ۷ بزرگ
-        dotsRows = 7;
-        dotsCols = 7;
+        dotsRows = 8;
+        dotsCols = 8;
         hLinesState = Array((dotsRows) * (dotsCols - 1)).fill(null);
         vLinesState = Array((dotsRows - 1) * dotsCols).fill(null);
         boxesState = Array((dotsRows - 1) * (dotsCols - 1)).fill(null);
@@ -698,12 +697,12 @@
 
         const grid = document.getElementById('dots-grid');
         let colTemplate = '';
-        for (let c = 0; c < dotsCols; c++) { colTemplate += ' 12px 40px'; }
-        grid.style.gridTemplateColumns = '12px' + colTemplate;
+        for (let c = 0; c < dotsCols; c++) { colTemplate += ' 14px 55px'; }
+        grid.style.gridTemplateColumns = '14px' + colTemplate;
 
         let rowTemplate = '';
-        for (let r = 0; r < dotsRows; r++) { rowTemplate += ' 12px 40px'; }
-        grid.style.gridTemplateRows = '12px' + rowTemplate;
+        for (let r = 0; r < dotsRows; r++) { rowTemplate += ' 14px 55px'; }
+        grid.style.gridTemplateRows = '14px' + rowTemplate;
 
         grid.innerHTML = '';
         let hIdx = 0, vIdx = 0, bIdx = 0;
@@ -774,7 +773,7 @@
         if (!scored) {
             isPlayerTurn = false;
             document.getElementById('dots-turn-indicator').innerText = 'نوبت ربات...';
-            setTimeout(botTurnMove, 700);
+            setTimeout(botTurnMove, 800);
         }
     }
 
@@ -802,7 +801,7 @@
         if (checkGameOver()) return;
 
         if (scored) {
-            setTimeout(botTurnMove, 700); // اگر ربات امتیاز بگیرد دوباره نوبت اوست
+            setTimeout(botTurnMove, 800);
         } else {
             isPlayerTurn = true;
             document.getElementById('dots-turn-indicator').innerText = 'نوبت: شما';
@@ -953,3 +952,4 @@
 
 </body>
 </html>
+```[cite: 4]
