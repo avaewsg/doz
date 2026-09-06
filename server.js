@@ -41,7 +41,7 @@ setInterval(() => {
 let waitingPlayers = [];
 const activeGames = {};
 const botGames = {};
-const dotBotGames = {}; // اضافه شده برای بازی نقطه خط با ربات
+const circleBotGames = {}; // بازی جدید دایره با بات
 
 io.on('connection', (socket) => {
     console.log('کاربر متصل شد:', socket.id);
@@ -147,6 +147,77 @@ io.on('connection', (socket) => {
         }
     });
 
+    // مدیریت بازی جدید چالش دایره با بات
+    socket.on('start_circle_bot_game', () => {
+        const username = socket.data.username;
+        if (!username || !db.users[username]) return;
+
+        circleBotGames[socket.id] = { active: true };
+        socket.emit('circle_game_started');
+    });
+
+    socket.on('submit_circle_drawing', ({ points }) => {
+        const game = circleBotGames[socket.id];
+        if (!game || !game.active) return;
+
+        if (!points || points.length < 10) {
+            socket.emit('circle_game_result', {
+                resultText: 'دایره بسیار ناقص است یا چیزی نکشیدید! بات برنده شد.',
+                winner: 'bot'
+            });
+            delete circleBotGames[socket.id];
+            return;
+        }
+
+        // الگوریتم تحلیل هندسی دقیق برای سنجش میزان دایره بودن (محاسبه انحراف از مرکز و ثبات شعاع)
+        let cx = 0, cy = 0;
+        points.forEach(p => { cx += p.x; cy += p.y; });
+        cx /= points.length;
+        cy /= points.length;
+
+        let radii = points.map(p => Math.sqrt(Math.pow(p.x - cx, 2) + Math.pow(p.y - cy, 2)));
+        let meanRadius = radii.reduce((a, b) => a + b, 0) / radii.length;
+
+        if (meanRadius < 15) {
+            socket.emit('circle_game_result', {
+                resultText: 'دایره بیش از حد کوچک است! بات برنده شد.',
+                winner: 'bot'
+            });
+            delete circleBotGames[socket.id];
+            return;
+        }
+
+        // محاسبه انحراف معیار شعاع‌ها نسبت به میانگین (معیار گرد بودن)
+        let variance = radii.reduce((sum, r) => sum + Math.pow(r - meanRadius, 2), 0) / radii.length;
+        let stdDev = Math.sqrt(variance);
+        let roundnessScore = stdDev / meanRadius; // هرچه کمتر، دایره استانداردتر و کامل‌تر
+
+        // بررسی میزان بسته بودن حلقه (فاصله نقطه ابتدا و انتها)
+        let startPoint = points[0];
+        let endPoint = points[points.length - 1];
+        let closureDistance = Math.sqrt(Math.pow(startPoint.x - endPoint.x, 2) + Math.pow(startPoint.y - endPoint.y, 2));
+
+        // تولید دایره شبیه‌سازی شده‌ی بات با خطاهای استاندارد و طبیعی بر اساس درجه سختی منطقی
+        let botStdDev = 0.18; // خطای بات
+
+        let playerWon = (roundnessScore < botStdDev && closureDistance < meanRadius * 0.6);
+
+        let resultText = '';
+        if (playerWon) {
+            resultText = `🎉 تبریک! دایره شما با دقت بالا و خطای کمتر کشیده شد و بات را شکست دادید! (امتیاز انحراف: ${roundnessScore.toFixed(2)})`;
+        } else {
+            resultText = `🤖 بات دایره کامل‌تری کشید! دایره شما ناپیوسته یا بیضوی بود. (امتیاز انحراف: ${roundnessScore.toFixed(2)})`;
+        }
+
+        socket.emit('circle_game_result', {
+            resultText,
+            winner: playerWon ? 'player' : 'bot',
+            score: roundnessScore.toFixed(3)
+        });
+
+        delete circleBotGames[socket.id];
+    });
+
     function makeBotAIMove(socket, game) {
         const emptyCells = [];
         game.board.forEach((val, idx) => { if (val === null) emptyCells.push(idx); });
@@ -204,147 +275,13 @@ io.on('connection', (socket) => {
         delete botGames[socket.id];
     }
 
-    // هندلر جدید برای بازی نقطه خط با ربات (شبکه ۶ در ۶ برای ساخت ۳۵ مربع)
-    socket.on('start_dots_bot_game', () => {
-        const username = socket.data.username;
-        if (!username || !db.users[username]) return;
-
-        const rows = 6;
-        const cols = 6;
-        const totalHorizontalLines = rows * (cols - 1); // 30
-        const totalVerticalLines = (rows - 1) * cols;   // 30
-
-        dotBotGames[socket.id] = {
-            rows: rows,
-            cols: cols,
-            hLines: Array(totalHorizontalLines).fill(false),
-            vLines: Array(totalVerticalLines).fill(false),
-            boxes: Array((rows - 1) * (cols - 1)).fill(null), // 25 مربع؟ حواستان باشد ۶ در ۶ یعنی ۵ در ۵ = ۲۵ مربع. کاربر خواست حداقل ۳۵ مربع! شبکه ۷ در ۶ می شود ۶ در ۵ = ۳0. شبکه ۷ در ۷ می شود ۶ در ۶ = ۳۶ مربع!
-            turn: 'player', // player یا bot
-            scores: { player: 0, bot: 0 }
-        };
-        // اصلاح برای حداقل ۳۵ مربع: شبکه ۷ در ۷ (۶ ردیف و ۶ ستون مربع = ۳۶ مربع)
-        const r = 7, c = 7;
-        dotBotGames[socket.id] = {
-            rows: r,
-            cols: c,
-            hLines: Array(r * (c - 1)).fill(false),
-            vLines: Array((r - 1) * c).fill(false),
-            boxes: Array((r - 1) * (c - 1)).fill(null), // 36 مربع
-            turn: 'player',
-            scores: { player: 0, bot: 0 }
-        };
-
-        socket.emit('dots_bot_state', dotBotGames[socket.id]);
-    });
-
-    socket.on('make_dots_bot_move', ({ type, index }) => {
-        const game = dotBotGames[socket.id];
-        if (!game || game.turn !== 'player') return;
-
-        let lineArray = type === 'h' ? game.hLines : game.vLines;
-        if (index < 0 || index >= lineArray.length || lineArray[index]) return;
-
-        lineArray[index] = true;
-        let scoredBoxes = evaluateAndFillBoxes(game);
-
-        if (scoredBoxes > 0) {
-            game.scores.player += scoredBoxes;
-            // بازیکن دوباره نوبت دارد اگر مربعی پر کند
-        } else {
-            game.turn = 'bot';
-        }
-
-        let isEnded = game.boxes.every(b => b !== null);
-        socket.emit('dots_bot_state', { ...game, isEnded });
-
-        if (isEnded) {
-            delete dotBotGames[socket.id];
-            return;
-        }
-
-        if (game.turn === 'bot') {
-            setTimeout(() => {
-                if (!dotBotGames[socket.id]) return;
-                makeDotsBotAIMove(socket);
-            }, 600);
-        }
-    });
-
-    function makeDotsBotAIMove(socket) {
-        const game = dotBotGames[socket.id];
-        if (!game || game.turn !== 'bot') return;
-
-        // یافتن تمام خطوط خالی
-        let availableHLines = [];
-        game.hLines.forEach((val, idx) => { if (!val) availableHLines.push({ type: 'h', index: idx }); });
-        let availableVLines = [];
-        game.vLines.forEach((val, idx) => { if (!val) availableVLines.push({ type: 'v', index: idx }); });
-        let allAvailable = [...availableHLines, ...availableVLines];
-
-        if (allAvailable.length === 0) return;
-
-        // هوش مصنوعی ساده: سعی می‌کند خطی انتخاب کند که مربع کامل کند یا به طور تصادفی انتخاب می‌کند
-        let chosen = allAvailable[Math.floor(Math.random() * allAvailable.length)];
-        let lineArr = chosen.type === 'h' ? game.hLines : game.vLines;
-        lineArr[chosen.index] = true;
-
-        let scoredBoxes = evaluateAndFillBoxes(game);
-        if (scoredBoxes > 0) {
-            game.scores.bot += scoredBoxes;
-            // ربات دوباره حرکت می‌کند
-            let isEnded = game.boxes.every(b => b !== null);
-            socket.emit('dots_bot_state', { ...game, isEnded });
-            if (!isEnded) {
-                setTimeout(() => makeDotsBotAIMove(socket), 600);
-            } else {
-                delete dotBotGames[socket.id];
-            }
-        } else {
-            game.turn = 'player';
-            let isEnded = game.boxes.every(b => b !== null);
-            socket.emit('dots_bot_state', { ...game, isEnded });
-            if (isEnded) delete dotBotGames[socket.id];
-        }
-    }
-
-    function evaluateAndFillBoxes(game) {
-        let r = game.rows;
-        let c = game.cols;
-        let newlyScored = 0;
-        let boxIndex = 0;
-
-        for (let row = 0; row < r - 1; row++) {
-            for (let col = 0; col < c - 1; col++) {
-                if (game.boxes[boxIndex] === null) {
-                    // بررسی ۴ ضلع مربع (row, col)
-                    let topIdx = row * (c - 1) + col;
-                    let bottomIdx = (row + 1) * (c - 1) + col;
-                    let leftIdx = row * c + col;
-                    let rightIdx = row * c + col + 1;
-
-                    let top = game.hLines[topIdx];
-                    let bottom = game.hLines[bottomIdx];
-                    let left = game.vLines[leftIdx];
-                    let right = game.vLines[rightIdx];
-
-                    if (top && bottom && left && right) {
-                        game.boxes[boxIndex] = (game.turn === 'player') ? 'P' : 'B';
-                        newlyScored++;
-                    }
-                }
-                boxIndex++;
-            }
-        }
-        return newlyScored;
-    }
-
     // بخش آنلاین
     socket.on('find_game', () => {
         const username = socket.data.username;
         if (!username || !db.users[username]) return;
         const player = db.users[username];
 
+        // اگر کاربر قبلاً در لیست انتظار است، دوباره اضافه نکنیم
         if (waitingPlayers.includes(socket.id)) return;
 
         if (!player.isOwner) {
@@ -457,7 +394,7 @@ io.on('connection', (socket) => {
         if (index !== -1) waitingPlayers.splice(index, 1);
 
         if (botGames[socket.id]) delete botGames[socket.id];
-        if (dotBotGames[socket.id]) delete dotBotGames[socket.id];
+        if (circleBotGames[socket.id]) delete circleBotGames[socket.id];
 
         for (const roomId in activeGames) {
             const game = activeGames[roomId];
