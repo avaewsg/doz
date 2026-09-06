@@ -269,7 +269,7 @@
         .cell.x { color: #00f3ff; text-shadow: 0 0 15px rgba(0,243,255,0.6); }
         .cell.o { color: #ff007f; text-shadow: 0 0 15px rgba(255,0,127,0.6); }
 
-        /* اصلاح کامل ساختار نقطه و خط دقیقاً مشابه عکس مرجع */
+        /* استایل دقیق صفحه نقطه و خط ۸ در ۸ استاندارد */
         .dots-board-container {
             background: #ffffff;
             border: 3px solid #00f3ff;
@@ -279,48 +279,49 @@
             box-shadow: 0 15px 50px rgba(0,0,0,0.9);
             margin: 10px 0;
             display: inline-block;
-            max-width: 95vw;
+            max-width: 98vw;
+            max-height: 80vh;
             overflow: auto;
         }
 
         .dots-grid {
             display: grid;
-            grid-template-columns: repeat(8, 12px 42px) 12px;
-            grid-template-rows: repeat(8, 12px 42px) 12px;
+            grid-template-columns: repeat(9, 8px 36px) 8px;
+            grid-template-rows: repeat(9, 8px 36px) 8px;
             align-items: center;
             justify-items: center;
         }
 
         .dot-item {
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             background: #000000;
             border-radius: 50%;
         }
 
         .dot-line-h {
-            height: 8px;
-            background: #e2e8f0;
-            border-radius: 4px;
+            height: 6px;
+            background: #cbd5e1;
+            border-radius: 3px;
             cursor: pointer;
             width: 100%;
             transition: background 0.2s;
         }
 
-        .dot-line-h:hover { background: #cbd5e1; }
+        .dot-line-h:hover { background: #94a3b8; }
         .dot-line-h.active-player { background: #00f3ff; box-shadow: 0 0 6px #00f3ff; cursor: default; }
         .dot-line-h.active-bot { background: #ff007f; box-shadow: 0 0 6px #ff007f; cursor: default; }
 
         .dot-line-v {
-            width: 8px;
-            background: #e2e8f0;
-            border-radius: 4px;
+            width: 6px;
+            background: #cbd5e1;
+            border-radius: 3px;
             cursor: pointer;
             height: 100%;
             transition: background 0.2s;
         }
 
-        .dot-line-v:hover { background: #cbd5e1; }
+        .dot-line-v:hover { background: #94a3b8; }
         .dot-line-v.active-player { background: #00f3ff; box-shadow: 0 0 6px #00f3ff; cursor: default; }
         .dot-line-v.active-bot { background: #ff007f; box-shadow: 0 0 6px #ff007f; cursor: default; }
 
@@ -328,16 +329,16 @@
             width: 100%;
             height: 100%;
             background: transparent;
-            border-radius: 6px;
+            border-radius: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'Lalezar', cursive;
-            font-size: 14px;
+            font-size: 13px;
             transition: background 0.3s;
         }
-        .dot-box.player { background: rgba(0, 243, 255, 0.3); color: #004080; }
-        .dot-box.bot { background: rgba(255, 0, 127, 0.3); color: #800033; }
+        .dot-box.player { background: rgba(0, 243, 255, 0.35); color: #003366; }
+        .dot-box.bot { background: rgba(255, 0, 127, 0.35); color: #660022; }
 
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -426,7 +427,7 @@
                     <button class="btn btn-bot-med" style="padding: 10px; font-size: 13px;" onclick="startBotGame('medium')">متوسط</button>
                     <button class="btn btn-bot-hard" style="padding: 10px; font-size: 13px;" onclick="startBotGame('hard')">سخت</button>
                 </div>
-                <button class="btn btn-dots-bot" style="padding: 10px; font-size: 14px; margin-top: 4px;" onclick="startDotsBotGame()">چالش نقطه خط استاندارد با ربات ⚝</button>
+                <button class="btn btn-dots-bot" style="padding: 10px; font-size: 14px; margin-top: 4px;" onclick="startDotsBotGame()">چالش نقطه خط ۸×۸ با ربات ⚝</button>
             </div>
         </div>
     </div>
@@ -469,9 +470,9 @@
         <button class="btn btn-secondary" style="width: auto; padding: 8px 20px; background: #ff4757; color:#fff;" onclick="exitBotGame()">خروج از بازی</button>
     </div>
 
-    <!-- بخش نقطه و خط استاندارد اصلاح‌شده -->
+    <!-- بخش نقطه و خط کامل ۸×۸ با قابلیت کلیک خطوط و امتیازدهی ساخت مربع -->
     <div id="dots-bot-game-section" class="game-layout hidden">
-        <h2 style="font-family:'Lalezar'; color: #ff007f; font-size: 24px; margin-bottom: 4px;">چالش نقطه و خط ⚝</h2>
+        <h2 style="font-family:'Lalezar'; color: #ff007f; font-size: 24px; margin-bottom: 4px;">چالش نقطه و خط ۸×۸ ⚝</h2>
         <div id="dots-scoreboard" style="font-family:'Lalezar'; font-size: 18px; margin-bottom: 8px; display: flex; gap: 25px; background: rgba(12,12,24,0.85); border: 1px solid rgba(255,0,127,0.4); padding: 8px 20px; border-radius: 14px;">
             <span style="color: #00f3ff;">امتیاز شما: <span id="dots-p-score">0</span></span>
             <span style="color: #ff007f;">امتیاز ربات: <span id="dots-b-score">0</span></span>
@@ -659,9 +660,9 @@
         }
     }
 
-    // ==================== مدیریت نقطه و خط استاندارد 8x8 ====================
-    let dotsRows = 8;
-    let dotsCols = 8;
+    // ==================== موتور کامل نقطه و خط ۸ در ۸ استاندارد ====================
+    let dotsRows = 9;
+    let dotsCols = 9;
     let hLinesState = [];
     let vLinesState = [];
     let boxesState = [];
@@ -673,9 +674,9 @@
         document.getElementById('dashboard-section').classList.add('hidden');
         document.getElementById('dots-bot-game-section').classList.remove('hidden');
         
-        dotsRows = 8;
-        dotsCols = 8;
-        hLinesState = Array((dotsRows) * (dotsCols - 1)).fill(null);
+        dotsRows = 9;
+        dotsCols = 9;
+        hLinesState = Array(dotsRows * (dotsCols - 1)).fill(null);
         vLinesState = Array((dotsRows - 1) * dotsCols).fill(null);
         boxesState = Array((dotsRows - 1) * (dotsCols - 1)).fill(null);
         playerDotsScore = 0;
@@ -693,7 +694,7 @@
     function renderDotsBoardUI() {
         document.getElementById('dots-p-score').innerText = playerDotsScore;
         document.getElementById('dots-b-score').innerText = botDotsScore;
-        document.getElementById('dots-turn-indicator').innerText = isPlayerTurn ? 'نوبت: شما' : 'نوبت ربات...';
+        document.getElementById('dots-turn-indicator').innerText = isPlayerTurn ? 'نوبت شماست (روی خطوط دلخواه کلیک کنید)' : 'نوبت ربات...';
 
         const grid = document.getElementById('dots-grid');
         grid.innerHTML = '';
@@ -765,7 +766,7 @@
         if (!scored) {
             isPlayerTurn = false;
             document.getElementById('dots-turn-indicator').innerText = 'نوبت ربات...';
-            setTimeout(botTurnMove, 800);
+            setTimeout(botTurnMove, 600);
         }
     }
 
@@ -793,10 +794,10 @@
         if (checkGameOver()) return;
 
         if (scored) {
-            setTimeout(botTurnMove, 800);
+            setTimeout(botTurnMove, 600);
         } else {
             isPlayerTurn = true;
-            document.getElementById('dots-turn-indicator').innerText = 'نوبت: شما';
+            document.getElementById('dots-turn-indicator').innerText = 'نوبت شماست (روی خطوط دلخواه کلیک کنید)';
             renderDotsBoardUI();
         }
     }
@@ -833,7 +834,7 @@
         let filledBoxes = boxesState.filter(b => b !== null).length;
         if (filledBoxes === totalBoxes) {
             setTimeout(() => {
-                let msg = playerDotsScore > botDotsScore ? '🎉 تبریک! شما برنده شدید!' : (playerDotsScore < botDotsScore ? '🤖 ربات برنده شد!' : '🤝 مساوی شدید!');
+                let msg = playerDotsScore > botDotsScore ? '🎉 تبریک! شما برنده چالش نقطه و خط شدید!' : (playerDotsScore < botDotsScore ? '🤖 ربات برنده شد!' : '🤝 مساوی شدید!');
                 alert(msg);
                 exitDotsBotGame();
             }, 300);
