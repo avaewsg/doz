@@ -234,7 +234,7 @@
         .btn-bot-easy { background: #2ed573; color: #000; font-family: 'Lalezar', cursive; }
         .btn-bot-med { background: #ffa502; color: #000; font-family: 'Lalezar', cursive; }
         .btn-bot-hard { background: #ff4757; color: #fff; font-family: 'Lalezar', cursive; }
-        .btn-dots-bot { background: linear-gradient(135deg, #ff007f, #7000ff); color: #fff; font-family: 'Lalezar', cursive; }
+        .btn-bot-dots { background: linear-gradient(135deg, #00f3ff, #ff007f); color: #fff; font-family: 'Lalezar', cursive; }
 
         .game-layout {
             display: flex;
@@ -269,76 +269,73 @@
         .cell.x { color: #00f3ff; text-shadow: 0 0 15px rgba(0,243,255,0.6); }
         .cell.o { color: #ff007f; text-shadow: 0 0 15px rgba(255,0,127,0.6); }
 
-        /* اصلاح کامل و دقیق صفحه نقطه و خط ۸ در ۸ مشابه استاندارد */
-        .dots-board-container {
-            background: #ffffff;
-            border: 3px solid #00f3ff;
-            border-radius: 20px;
-            padding: 12px;
-            position: relative;
-            box-shadow: 0 15px 50px rgba(0,0,0,0.9);
-            margin: 10px 0;
-            display: inline-block;
-            max-width: 98vw;
-            max-height: 75vh;
-            overflow: auto;
-        }
-
-        .dots-grid {
-            display: grid;
-            grid-template-columns: repeat(8, 10px 36px) 10px;
-            grid-template-rows: repeat(8, 10px 36px) 10px;
+        /* استایل‌های مربوط به بازی نقطه خط بزرگ */
+        .dots-game-container {
+            display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-items: center;
+            background: rgba(12, 12, 24, 0.9);
+            border: 2px solid rgba(0, 243, 255, 0.4);
+            border-radius: 20px;
+            padding: 15px;
+            max-width: 100%;
+            overflow-x: auto;
         }
 
-        .dot-item {
-            width: 8px;
-            height: 8px;
-            background: #000000;
+        .dots-grid-board {
+            display: grid;
+            grid-template-columns: repeat(7, 40px 36px) 40px;
+            grid-template-rows: repeat(7, 40px 36px) 40px;
+            gap: 0;
+            background: #060611;
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
+            margin: 10px 0;
+        }
+
+        .dot-node {
+            width: 14px;
+            height: 14px;
+            background: #00f3ff;
             border-radius: 50%;
+            margin: auto;
+            box-shadow: 0 0 8px #00f3ff;
         }
 
-        .dot-line-h {
-            height: 8px;
-            background: #cbd5e1;
-            border-radius: 4px;
+        .line-h {
+            height: 14px;
+            background: rgba(255, 255, 255, 0.08);
             cursor: pointer;
-            width: 100%;
+            border-radius: 4px;
+            margin: auto 0;
             transition: background 0.2s;
         }
+        .line-h:hover { background: rgba(0, 243, 255, 0.5); }
+        .line-h.active { background: #00f3ff; box-shadow: 0 0 10px #00f3ff; }
 
-        .dot-line-h:hover { background: #94a3b8; }
-        .dot-line-h.active-player { background: #00f3ff; box-shadow: 0 0 6px #00f3ff; cursor: default; }
-        .dot-line-h.active-bot { background: #ff007f; box-shadow: 0 0 6px #ff007f; cursor: default; }
-
-        .dot-line-v {
-            width: 8px;
-            background: #cbd5e1;
-            border-radius: 4px;
+        .line-v {
+            width: 14px;
+            background: rgba(255, 255, 255, 0.08);
             cursor: pointer;
-            height: 100%;
+            border-radius: 4px;
+            margin: 0 auto;
             transition: background 0.2s;
         }
+        .line-v:hover { background: rgba(0, 243, 255, 0.5); }
+        .line-v.active { background: #00f3ff; box-shadow: 0 0 10px #00f3ff; }
 
-        .dot-line-v:hover { background: #94a3b8; }
-        .dot-line-v.active-player { background: #00f3ff; box-shadow: 0 0 6px #00f3ff; cursor: default; }
-        .dot-line-v.active-bot { background: #ff007f; box-shadow: 0 0 6px #ff007f; cursor: default; }
-
-        .dot-box {
-            width: 100%;
-            height: 100%;
-            background: transparent;
-            border-radius: 4px;
+        .box-cell {
+            background: rgba(255, 255, 255, 0.02);
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'Lalezar', cursive;
-            font-size: 13px;
-            transition: background 0.3s;
+            font-size: 16px;
+            border-radius: 4px;
         }
-        .dot-box.player { background: rgba(0, 243, 255, 0.4); color: #003366; }
-        .dot-box.bot { background: rgba(255, 0, 127, 0.4); color: #660022; }
+        .box-cell.player { color: #00f3ff; text-shadow: 0 0 8px #00f3ff; }
+        .box-cell.bot { color: #ff007f; text-shadow: 0 0 8px #ff007f; }
 
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -427,7 +424,8 @@
                     <button class="btn btn-bot-med" style="padding: 10px; font-size: 13px;" onclick="startBotGame('medium')">متوسط</button>
                     <button class="btn btn-bot-hard" style="padding: 10px; font-size: 13px;" onclick="startBotGame('hard')">سخت</button>
                 </div>
-                <button class="btn btn-dots-bot" style="padding: 10px; font-size: 14px; margin-top: 4px;" onclick="startDotsBotGame()">چالش نقطه خط ۸×۸ با ربات ⚝</button>
+                <!-- اضافه شدن بازی نقطه خط با ربات در پایین دوز با ربات -->
+                <button class="btn btn-bot-dots" style="padding: 10px; font-size: 14px; margin-top: 4px;" onclick="startDotsBotGame()">🕹️ بازی نقطه خط با ربات (بزرگ)</button>
             </div>
         </div>
     </div>
@@ -470,17 +468,17 @@
         <button class="btn btn-secondary" style="width: auto; padding: 8px 20px; background: #ff4757; color:#fff;" onclick="exitBotGame()">خروج از بازی</button>
     </div>
 
-    <!-- بخش نقطه و خط کامل ۸×۸ با قابلیت کلیک خطوط و امتیازدهی ساخت مربع -->
+    <!-- اضافه شدن بخش صفحه بازی نقطه خط بزرگ با ربات -->
     <div id="dots-bot-game-section" class="game-layout hidden">
-        <h2 style="font-family:'Lalezar'; color: #ff007f; font-size: 22px; margin-bottom: 4px;">چالش نقطه و خط ۸×۸ ⚝</h2>
-        <div id="dots-scoreboard" style="font-family:'Lalezar'; font-size: 16px; margin-bottom: 6px; display: flex; gap: 20px; background: rgba(12,12,24,0.85); border: 1px solid rgba(255,0,127,0.4); padding: 6px 16px; border-radius: 12px;">
-            <span style="color: #00f3ff;">امتیاز شما: <span id="dots-p-score">0</span></span>
-            <span style="color: #ff007f;">امتیاز ربات: <span id="dots-b-score">0</span></span>
+        <h2 style="font-family:'Lalezar'; color: #00f3ff; font-size: 22px; margin-bottom: 5px;">بازی نقطه خط با ربات (بزرگ) ✏️</h2>
+        <div id="dots-scoreboard-header" style="background: rgba(12,12,24,0.8); border: 1px solid rgba(0,243,255,0.3); padding: 6px 16px; border-radius: 12px; font-family:'Lalezar'; font-size: 16px; margin-bottom: 8px; display: flex; gap: 15px; align-items: center;">
+            <span style="color: #00f3ff;">شما: <span id="dots-player-score">0</span></span> | 
+            <span style="color: #ff007f;">ربات: <span id="dots-bot-score">0</span></span>
         </div>
-        <div id="dots-turn-indicator" style="font-family:'Lalezar'; font-size: 17px; color: #ffeb3b; margin-bottom: 8px;">نوبت: شما</div>
+        <div id="dots-turn-indicator" style="font-family: 'Lalezar'; font-size: 18px; color: #ffeb3b; margin-bottom: 8px; text-shadow: 0 0 10px rgba(255,235,59,0.4);">نوبت کیه؟</div>
         
-        <div class="dots-board-container">
-            <div id="dots-grid" class="dots-grid"></div>
+        <div class="dots-game-container">
+            <div id="dots-grid-board" class="dots-grid-board"></div>
         </div>
 
         <button class="btn btn-secondary" style="width: auto; padding: 8px 20px; background: #ff4757; color:#fff; margin-top: 10px;" onclick="exitDotsBotGame()">خروج از بازی</button>
@@ -660,30 +658,11 @@
         }
     }
 
-    // ==================== موتور کامل نقطه و خط ۸ در ۸ استاندارد ====================
-    let dotsRows = 9;
-    let dotsCols = 9;
-    let hLinesState = [];
-    let vLinesState = [];
-    let boxesState = [];
-    let playerDotsScore = 0;
-    let botDotsScore = 0;
-    let isPlayerTurn = true;
-
+    // متدهای فرانت‌اند برای بازی نقطه خط با ربات
     function startDotsBotGame() {
         document.getElementById('dashboard-section').classList.add('hidden');
         document.getElementById('dots-bot-game-section').classList.remove('hidden');
-        
-        dotsRows = 9;
-        dotsCols = 9;
-        hLinesState = Array(dotsRows * (dotsCols - 1)).fill(null);
-        vLinesState = Array((dotsRows - 1) * dotsCols).fill(null);
-        boxesState = Array((dotsRows - 1) * (dotsCols - 1)).fill(null);
-        playerDotsScore = 0;
-        botDotsScore = 0;
-        isPlayerTurn = true;
-        
-        renderDotsBoardUI();
+        socket.emit('start_dots_bot_game');
     }
 
     function exitDotsBotGame() {
@@ -691,158 +670,97 @@
         document.getElementById('dashboard-section').classList.remove('hidden');
     }
 
-    function renderDotsBoardUI() {
-        document.getElementById('dots-p-score').innerText = playerDotsScore;
-        document.getElementById('dots-b-score').innerText = botDotsScore;
-        document.getElementById('dots-turn-indicator').innerText = isPlayerTurn ? 'نوبت شماست (روی خطوط دلخواه کلیک کنید)' : 'نوبت ربات...';
+    socket.on('dots_bot_state', (gameState) => {
+        renderDotsBoard(gameState);
+    });
 
-        const grid = document.getElementById('dots-grid');
-        grid.innerHTML = '';
-        let hIdx = 0, vIdx = 0, bIdx = 0;
+    function renderDotsBoard(state) {
+        const boardEl = document.getElementById('dots-grid-board');
+        boardEl.innerHTML = '';
 
-        for (let r = 0; r < dotsRows; r++) {
-            for (let c = 0; c < dotsCols; c++) {
-                const dot = document.createElement('div');
-                dot.className = 'dot-item';
-                grid.appendChild(dot);
-
-                if (c < dotsCols - 1) {
-                    const hLine = document.createElement('div');
-                    const curH = hIdx++;
-                    hLine.className = 'dot-line-h';
-                    if (hLinesState[curH]) {
-                        hLine.classList.add(hLinesState[curH] === 'player' ? 'active-player' : 'active-bot');
-                    } else if (isPlayerTurn) {
-                        hLine.onclick = () => makePlayerLineMove('h', curH);
-                    }
-                    grid.appendChild(hLine);
-                }
-            }
-
-            if (r < dotsRows - 1) {
-                for (let c = 0; c < dotsCols; c++) {
-                    const vLine = document.createElement('div');
-                    const curV = vIdx++;
-                    vLine.className = 'dot-line-v';
-                    if (vLinesState[curV]) {
-                        vLine.classList.add(vLinesState[curV] === 'player' ? 'active-player' : 'active-bot');
-                    } else if (isPlayerTurn) {
-                        vLine.onclick = () => makePlayerLineMove('v', curV);
-                    }
-                    grid.appendChild(vLine);
-
-                    const box = document.createElement('div');
-                    const curB = bIdx++;
-                    box.className = 'dot-box';
-                    if (boxesState[curB] === 'player') {
-                        box.classList.add('player');
-                        box.innerText = 'شما';
-                    } else if (boxesState[curB] === 'bot') {
-                        box.classList.add('bot');
-                        box.innerText = 'ربات';
-                    }
-                    grid.appendChild(box);
-                }
-            }
-        }
-    }
-
-    function makePlayerLineMove(type, index) {
-        if (!isPlayerTurn) return;
+        document.getElementById('dots-player-score').innerText = state.scores.player;
+        document.getElementById('dots-bot-score').innerText = state.scores.bot;
         
-        if (type === 'h') {
-            if (hLinesState[index]) return;
-            hLinesState[index] = 'player';
+        const turnIndicator = document.getElementById('dots-turn-indicator');
+        if (state.isEnded) {
+            if (state.scores.player > state.scores.bot) {
+                turnIndicator.innerText = '🎉 بازی تمام شد! شما برنده شدید!';
+            } else if (state.scores.bot > state.scores.player) {
+                turnIndicator.innerText = '🤖 بازی تمام شد! ربات برنده شد!';
+            } else {
+                turnIndicator.innerText = '🤝 بازی تمام شد! مساوی شدید!';
+            }
         } else {
-            if (vLinesState[index]) return;
-            vLinesState[index] = 'player';
+            turnIndicator.innerText = state.turn === 'player' ? 'نوبت شماست ✏️' : 'نوبت ربات است 🤖...';
         }
 
-        let scored = checkCompletedBoxes('player');
-        renderDotsBoardUI();
+        let r = state.rows;
+        let c = state.cols;
+        let hLineCount = 0;
+        let vLineCount = 0;
+        let boxCount = 0;
 
-        if (checkGameOver()) return;
+        for (let row = 0; row < r; row++) {
+            // ردیف نقاط و خطوط افقی
+            for (let col = 0; col < c; col++) {
+                // نقطه
+                const dot = document.createElement('div');
+                dot.className = 'dot-node';
+                boardEl.appendChild(dot);
 
-        if (!scored) {
-            isPlayerTurn = false;
-            document.getElementById('dots-turn-indicator').innerText = 'نوبت ربات...';
-            setTimeout(botTurnMove, 600);
-        }
-    }
+                // خط افقی (اگر ستون آخر نباشد)
+                if (col < c - 1) {
+                    const lineIdx = hLineCount++;
+                    const hLine = document.createElement('div');
+                    hLine.className = 'line-h';
+                    if (state.hLines[lineIdx]) hLine.classList.add('active');
+                    else {
+                        hLine.onclick = () => {
+                            if (state.turn === 'player' && !state.isEnded) {
+                                socket.emit('make_dots_bot_move', { type: 'h', index: lineIdx });
+                            }
+                        };
+                    }
+                    boardEl.appendChild(hLine);
+                }
+            }
 
-    function botTurnMove() {
-        let availableH = [];
-        let availableV = [];
+            // ردیف خطوط عمودی و خانه‌های مربعی (اگر ردیف آخر نباشد)
+            if (row < r - 1) {
+                for (let col = 0; col < c; col++) {
+                    // خط عمودی
+                    const vLineIdx = vLineCount++;
+                    const vLine = document.createElement('div');
+                    vLine.className = 'line-v';
+                    if (state.vLines[vLineIdx]) vLine.classList.add('active');
+                    else {
+                        vLine.onclick = () => {
+                            if (state.turn === 'player' && !state.isEnded) {
+                                socket.emit('make_dots_bot_move', { type: 'v', index: vLineIdx });
+                            }
+                        };
+                    }
+                    boardEl.appendChild(vLine);
 
-        hLinesState.forEach((val, idx) => { if (!val) availableH.push(idx); });
-        vLinesState.forEach((val, idx) => { if (!val) availableV.push(idx); });
-
-        if (availableH.length === 0 && availableV.length === 0) return;
-
-        let choseH = availableH.length > 0 && (availableV.length === 0 || Math.random() < 0.5);
-        if (choseH) {
-            let randIdx = availableH[Math.floor(Math.random() * availableH.length)];
-            hLinesState[randIdx] = 'bot';
-        } else {
-            let randIdx = availableV[Math.floor(Math.random() * availableV.length)];
-            vLinesState[randIdx] = 'bot';
-        }
-
-        let scored = checkCompletedBoxes('bot');
-        renderDotsBoardUI();
-
-        if (checkGameOver()) return;
-
-        if (scored) {
-            setTimeout(botTurnMove, 600);
-        } else {
-            isPlayerTurn = true;
-            document.getElementById('dots-turn-indicator').innerText = 'نوبت شماست (روی خطوط دلخواه کلیک کنید)';
-            renderDotsBoardUI();
-        }
-    }
-
-    function checkCompletedBoxes(owner) {
-        let scored = false;
-        let boxIndex = 0;
-        let rows = dotsRows - 1;
-        let cols = dotsCols - 1;
-
-        for (let r = 0; r < rows; r++) {
-            for (let c = 0; c < cols; c++) {
-                if (!boxesState[boxIndex]) {
-                    let topIdx = r * (dotsCols - 1) + c;
-                    let bottomIdx = (r + 1) * (dotsCols - 1) + c;
-                    let leftIdx = r * dotsCols + c;
-                    let rightIdx = r * dotsCols + (c + 1);
-
-                    if (hLinesState[topIdx] && hLinesState[bottomIdx] && vLinesState[leftIdx] && vLinesState[rightIdx]) {
-                        boxesState[boxIndex] = owner;
-                        if (owner === 'player') playerDotsScore++;
-                        else botDotsScore++;
-                        scored = true;
+                    // خانه مربعی (اگر ستون آخر نباشد)
+                    if (col < c - 1) {
+                        const bIdx = boxCount++;
+                        const box = document.createElement('div');
+                        box.className = 'box-cell';
+                        const owner = state.boxes[bIdx];
+                        if (owner === 'P') {
+                            box.innerText = 'شما';
+                            box.classList.add('player');
+                        } else if (owner === 'B') {
+                            box.innerText = 'ربات';
+                            box.classList.add('bot');
+                        }
+                        boardEl.appendChild(box);
                     }
                 }
-                boxIndex++;
             }
         }
-        return scored;
     }
-
-    function checkGameOver() {
-        let totalBoxes = (dotsRows - 1) * (dotsCols - 1);
-        let filledBoxes = boxesState.filter(b => b !== null).length;
-        if (filledBoxes === totalBoxes) {
-            setTimeout(() => {
-                let msg = playerDotsScore > botDotsScore ? '🎉 تبریک! شما برنده چالش نقطه و خط شدید!' : (playerDotsScore < botDotsScore ? '🤖 ربات برنده شد!' : '🤝 مساوی شدید!');
-                alert(msg);
-                exitDotsBotGame();
-            }, 300);
-            return true;
-        }
-        return false;
-    }
-    // ==================== پایان بخش نقطه و خط ====================
 
     function findGame() {
         document.getElementById('dashboard-section').classList.add('hidden');
