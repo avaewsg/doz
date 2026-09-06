@@ -41,6 +41,7 @@ setInterval(() => {
 let waitingPlayers = [];
 const activeGames = {};
 const botGames = {};
+const dotsBotGames = {}; // حالت بازی نقطه خط با ربات
 
 io.on('connection', (socket) => {
     console.log('کاربر متصل شد:', socket.id);
@@ -115,158 +116,323 @@ io.on('connection', (socket) => {
         io.emit('receive_global_chat', chatObj);
     });
 
-    // --- بازی نقطه خط با ربات (شبکه 3 در 3 نقطه یعنی 2 در 2 مربع) ---
     socket.on('start_bot_game', ({ difficulty }) => {
         const username = socket.data.username;
         if (!username || !db.users[username]) return;
 
-        // خطوط افقی: 2 رک، هر کدام 3 خط -> کلاً 6 خط افقی
-        // خطوط عمودی: 3 ستون، هر کدام 2 خط -> کلاً 6 خط عمودی
         botGames[socket.id] = {
-            hLines: Array(6).fill(false),
-            vLines: Array(6).fill(false),
-            boxes: Array(4).fill(null), // 4 مربع (0 تا 3)
-            scores: { player: 0, bot: 0 },
+            board: Array(9).fill(null),
             turn: 'player',
             difficulty: difficulty || 'medium'
         };
 
-        socket.emit('bot_game_start', getDotGameState(socket.id));
+        socket.emit('bot_game_start', { board: botGames[socket.id].board, turn: 'player' });
     });
 
-    socket.on('make_bot_move', ({ type, index }) => {
+    socket.on('make_bot_move', ({ index }) => {
         const game = botGames[socket.id];
+        if (!game || game.turn !== 'player' || game.board[index] !== null) return;
+
+        game.board[index] = 'X';
+        let winner = checkWin(game.board);
+        if (winner || game.board.every(c => c !== null)) {
+            handleBotGameOver(socket, game, winner);
+        } else {
+            game.turn = 'bot';
+            socket.emit('bot_game_update', { board: game.board, turn: 'bot' });
+            setTimeout(() => {
+                if (!botGames[socket.id]) return;
+                makeBotAIMove(socket, game);
+            }, 600);
+        }
+    });
+
+    function makeBotAIMove(socket, game) {
+        const emptyCells = [];
+        game.board.forEach((val, idx) => { if (val === null) emptyCells.push(idx); });
+        if (emptyCells.length === 0) return;
+
+        let chosenMove = null;
+        if (game.difficulty === 'easy') {
+            chosenMove = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+        } else if (game.difficulty === 'medium') {
+            chosenMove = findBestMove(game.board, 'O', 'X');
+            if (chosenMove === null) {
+                const preferred = [4, 0, 2, 6, 8, 1, 3, 5, 7].filter(i => game.board[i] === null);
+                chosenMove = preferred.length > 0 ? preferred[0] : emptyCells[0];
+            }
+        } else {
+            chosenMove = findBestMove(game.board, 'O', 'X');
+            if (chosenMove === null) chosenMove = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+        }
+
+        game.board[chosenMove] = 'O';
+        let winner = checkWin(game.board);
+        if (winner || game.board.every(c => c !== null)) {
+            handleBotGameOver(socket, game, winner);
+        } else {
+            game.turn = 'player';
+            socket.emit('bot_game_update', { board: game.board, turn: 'player' });
+        }
+    }
+
+    function findBestMove(board, botSym, playerSym) {
+        for (let i = 0; i < 9; i++) {
+            if (board[i] === null) {
+                board[i] = botSym;
+                if (checkWin(board) === botSym) { board[i] = null; return i; }
+                board[i] = null;
+            }
+        }
+        for (let i = 0; i < 9; i++) {
+            if (board[i] === null) {
+                board[i] = playerSym;
+                if (checkWin(board) === playerSym) { board[i] = null; return i; }
+                board[i] = null;
+            }
+        }
+        return null;
+    }
+
+    function handleBotGameOver(socket, game, winnerSymbol) {
+        let resultText = '';
+        if (winnerSymbol === 'X') resultText = 'تبریک! شما ربات را بردید 🎉 (بدون تغییر کاپ/سکه)';
+        else if (winnerSymbol === 'O') resultText = 'ربات برنده شد! 🤖 (بدون تغییر کاپ/سکه)';
+        else resultText = 'بازی مساوی شد! (بدون تغییر کاپ/سکه)';
+
+        socket.emit('bot_game_over', { board: game.board, resultText });
+        delete botGames[socket.id];
+    }
+
+    // ==================== بخش بازی نقطه خط با ربات ====================
+    // شبکه 7 در 7 نقطه یعنی 6 ردیف در 6 ستون مربع شکل = 36 مربع کامل (بزرگ‌تر از 35)
+    const DOTS_ROWS = 7;
+    const DOTS_COLS = 7;
+
+    socket.on('start_dots_bot_game', () => {
+        const username = socket.data.username;
+        if (!username || !db.users[username]) return;
+
+        // تعداد کل خطوط افقی: ROWS * (COLS - 1)
+        // تعداد کل خطوط عمودی: COLS * (ROWS - 1)
+        const hLines = Array(DOTS_ROWS * (DOTS_COLS - 1)).fill(false);
+        const vLines = Array(DOTS_COLS * (DOTS_ROWS - 1)).fill(false);
+        const boxes = Array((DOTS_ROWS - 1) * (DOTS_COLS - 1)).fill(null); // null یا 'player' یا 'bot'
+
+        dotsBotGames[socket.id] = {
+            hLines,
+            vLines,
+            boxes,
+            turn: 'player',
+            scores: { player: 0, bot: 0 }
+        };
+
+        socket.emit('dots_bot_game_start', {
+            hLines,
+            vLines,
+            boxes,
+            turn: 'player',
+            scores: { player: 0, bot: 0 },
+            rows: DOTS_ROWS,
+            cols: DOTS_COLS
+        });
+    });
+
+    socket.on('make_dots_bot_move', ({ type, index }) => {
+        const game = dotsBotGames[socket.id];
         if (!game || game.turn !== 'player') return;
 
-        let isValid = false;
-        if (type === 'h' && index >= 0 && index < 6 && !game.hLines[index]) {
-            game.hLines[index] = true;
-            isValid = true;
-        } else if (type === 'v' && index >= 0 && index < 6 && !game.vLines[index]) {
-            game.vLines[index] = true;
-            isValid = true;
-        }
+        let lineArray = (type === 'h') ? game.hLines : game.vLines;
+        if (index < 0 || index >= lineArray.length || lineArray[index]) return;
 
-        if (!isValid) return;
+        lineArray[index] = true;
 
-        // بررسی اینکه آیا این حرکت مربعی را کامل کرده است یا خیر
-        let scoredBoxes = checkAndClaimBoxes(game, 'player');
+        // بررسی اینکه آیا این خط مربعی را کامل کرده است یا خیر
+        let boxesCompleted = checkAndCompleteDotsBoxes(game, type, index, 'player');
 
-        let isGameOver = game.boxes.every(b => b !== null);
+        let totalBoxes = game.boxes.length;
+        let filledCount = game.scores.player + game.scores.bot;
 
-        if (isGameOver) {
-            handleDotGameOver(socket, game);
+        if (filledCount >= totalBoxes) {
+            handleDotsBotGameOver(socket, game);
             return;
         }
 
-        // اگر بازیکن مربعی کامل کرد، دوباره نوبت خودش است، وگرنه نوبت ربات می‌شود
-        if (scoredBoxes === 0) {
-            game.turn = 'bot';
-            socket.emit('bot_game_update', getDotGameState(socket.id));
-            setTimeout(() => {
-                if (!botGames[socket.id]) return;
-                makeDotAIMove(socket);
-            }, 700);
+        if (boxesCompleted > 0) {
+            // بازیکن دوباره نوبت دارد چون مربع کامل کرده است
+            socket.emit('dots_bot_game_update', {
+                hLines: game.hLines,
+                vLines: game.vLines,
+                boxes: game.boxes,
+                turn: 'player',
+                scores: game.scores,
+                message: 'یک مربع ساختی! دوباره نوبت توست.'
+            });
         } else {
-            socket.emit('bot_game_update', getDotGameState(socket.id));
+            // نوبت ربات
+            game.turn = 'bot';
+            socket.emit('dots_bot_game_update', {
+                hLines: game.hLines,
+                vLines: game.vLines,
+                boxes: game.boxes,
+                turn: 'bot',
+                scores: game.scores,
+                message: 'نوبت ربات است...'
+            });
+
+            setTimeout(() => {
+                if (!dotsBotGames[socket.id]) return;
+                makeDotsBotAIMove(socket, game);
+            }, 700);
         }
     });
 
-    function makeDotAIMove(socket) {
-        const game = botGames[socket.id];
-        if (!game || game.turn !== 'bot') return;
-
-        // جمع‌آوری تمام خطوط خالی
-        const emptyMoves = [];
-        for (let i = 0; i < 6; i++) {
-            if (!game.hLines[i]) emptyMoves.push({ type: 'h', index: i });
-            if (!game.vLines[i]) emptyMoves.push({ type: 'v', index: i });
-        }
-
-        if (emptyMoves.length === 0) return;
-
-        // هوش مصنوعی ساده/متوسط برای انتخاب خط
-        let chosenMove = emptyMoves[Math.floor(Math.random() * emptyMoves.length)];
-        
-        // اعمال حرکت ربات
-        if (chosenMove.type === 'h') game.hLines[chosenMove.index] = true;
-        else game.vLines[chosenMove.index] = true;
-
-        let scoredBoxes = checkAndClaimBoxes(game, 'bot');
-        let isGameOver = game.boxes.every(b => b !== null);
-
-        if (isGameOver) {
-            handleDotGameOver(socket, game);
+    function makeDotsBotAIMove(socket, game) {
+        let totalBoxes = game.boxes.length;
+        let filledCount = game.scores.player + game.scores.bot;
+        if (filledCount >= totalBoxes) {
+            handleDotsBotGameOver(socket, game);
             return;
         }
 
-        if (scoredBoxes > 0 && !isGameOver) {
-            // اگر ربات مربع گرفت، باز هم نوبت خودش است
-            socket.emit('bot_game_update', getDotGameState(socket.id));
+        // هوش مصنوعی ساده و هوشمند برای انتخاب خط خالی
+        let availableHLines = [];
+        game.hLines.forEach((val, idx) => { if (!val) availableHLines.push({ type: 'h', index: idx }); });
+        let availableVLines = [];
+        game.vLines.forEach((val, idx) => { if (!val) availableVLines.push({ type: 'v', index: idx }); });
+
+        let allAvailable = [...availableHLines, ...availableVLines];
+        if (allAvailable.length === 0) {
+            handleDotsBotGameOver(socket, game);
+            return;
+        }
+
+        // اولویت اول ربات: اگر حرکتی وجود دارد که بلافاصله مربعی را کامل کند، آن را انتخاب کند
+        let chosenLine = null;
+        for (let line of allAvailable) {
+            let tempHLines = [...game.hLines];
+            let tempVLines = [...game.vLines];
+            if (line.type === 'h') tempHLines[line.index] = true;
+            else tempVLines[line.index] = true;
+
+            if (countCompletedBoxesSimulate(tempHLines, tempVLines, game.boxes) > game.scores.bot + game.scores.player) {
+                chosenLine = line;
+                break;
+            }
+        }
+
+        // اگر حرکتی برای تکمیل مربع نبود، یک حرکت تصادفی انتخاب کند
+        if (!chosenLine) {
+            chosenLine = allAvailable[Math.floor(Math.random() * allAvailable.length)];
+        }
+
+        let lineArray = (chosenLine.type === 'h') ? game.hLines : game.vLines;
+        lineArray[chosenLine.index] = true;
+
+        let boxesCompleted = checkAndCompleteDotsBoxes(game, chosenLine.type, chosenLine.index, 'bot');
+
+        filledCount = game.scores.player + game.scores.bot;
+        if (filledCount >= totalBoxes) {
+            handleDotsBotGameOver(socket, game);
+            return;
+        }
+
+        if (boxesCompleted > 0) {
+            socket.emit('dots_bot_game_update', {
+                hLines: game.hLines,
+                vLines: game.vLines,
+                boxes: game.boxes,
+                turn: 'bot',
+                scores: game.scores,
+                message: 'ربات یک مربع ساخت و دوباره نوبت اوست!'
+            });
             setTimeout(() => {
-                if (!botGames[socket.id]) return;
-                makeDotAIMove(socket);
+                if (!dotsBotGames[socket.id]) return;
+                makeDotsBotAIMove(socket, game);
             }, 700);
         } else {
             game.turn = 'player';
-            socket.emit('bot_game_update', getDotGameState(socket.id));
+            socket.emit('dots_bot_game_update', {
+                hLines: game.hLines,
+                vLines: game.vLines,
+                boxes: game.boxes,
+                turn: 'player',
+                scores: game.scores,
+                message: 'نوبت شماست!'
+            });
         }
     }
 
-    function checkAndClaimBoxes(game, owner) {
-        let scored = 0;
-        // ۴ مربع در شبکه 2x2 داریم:
-        // مربع 0: افقی بالا 0، افقی پایین 3، عمودی چپ 0، عمودی راست 1
-        // مربع 1: افقی بالا 1، افقی پایین 4، عمودی چپ 1، عمودی راست 2
-        // مربع 2: افقی بالا 3، افقی پایین 5، عمودی چپ 3، عمودی راست 4
-        // مربع 3: افقی بالا 4، افقی پایین 5، عمودی چپ 4، عمودی راست 5
-        const boxMap = [
-            { hTop: 0, hBot: 3, vLeft: 0, vRight: 1 },
-            { hTop: 1, hBot: 4, vLeft: 1, vRight: 2 },
-            { hTop: 3, hBot: 5, vLeft: 3, vRight: 4 },
-            { hTop: 4, hBot: 5, vLeft: 4, vRight: 5 }
-        ];
+    function checkAndCompleteDotsBoxes(game, type, index, owner) {
+        let completed = 0;
+        let R = DOTS_ROWS - 1;
+        let C = DOTS_COLS - 1;
 
-        for (let i = 0; i < 4; i++) {
-            if (game.boxes[i] === null) {
-                const b = boxMap[i];
-                if (game.hLines[b.hTop] && game.hLines[b.hBot] && game.vLines[b.vLeft] && game.vLines[b.vRight]) {
-                    game.boxes[i] = owner;
+        for (let r = 0; r < R; r++) {
+            for (let c = 0; c < C; c++) {
+                let boxIndex = r * C + c;
+                if (game.boxes[boxIndex] !== null) continue;
+
+                // ایندکس 4 ضلع مربع (r, c)
+                // خط افقی بالا: r * C + c
+                // خط افقی پایین: (r + 1) * C + c
+                // خط عمودی چپ: c * R + r (در ساختار آرایه vLines) -> بگذارید دقیق محاسبه کنیم:
+                // آرایه vLines با ابعاد DOTS_COLS * (DOTS_ROWS - 1) است.
+                // فرمول ایندکس خط عمودی برای ستون c و سطر r: c * (DOTS_ROWS - 1) + r
+                let topH = r * C + c;
+                let bottomH = (r + 1) * C + c;
+                let leftV = c * (DOTS_ROWS - 1) + r;
+                let rightV = (c + 1) * (DOTS_ROWS - 1) + r;
+
+                if (game.hLines[topH] && game.hLines[bottomH] && game.vLines[leftV] && game.vLines[rightV]) {
+                    game.boxes[boxIndex] = owner;
                     game.scores[owner]++;
-                    scored++;
+                    completed++;
                 }
             }
         }
-        return scored;
+        return completed;
     }
 
-    function getDotGameState(socketId) {
-        const game = botGames[socketId];
-        return {
+    function countCompletedBoxesSimulate(hLines, vLines, oldBoxes) {
+        let count = 0;
+        let R = DOTS_ROWS - 1;
+        let C = DOTS_COLS - 1;
+        for (let r = 0; r < R; r++) {
+            for (let c = 0; c < C; c++) {
+                let boxIndex = r * C + c;
+                let topH = r * C + c;
+                let bottomH = (r + 1) * C + c;
+                let leftV = c * (DOTS_ROWS - 1) + r;
+                let rightV = (c + 1) * (DOTS_ROWS - 1) + r;
+                if (hLines[topH] && hLines[bottomH] && vLines[leftV] && vLines[rightV]) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    function handleDotsBotGameOver(socket, game) {
+        let resultText = '';
+        if (game.scores.player > game.scores.bot) {
+            resultText = `تبریک! شما برنده شدید 🎉 (امتیاز شما: ${game.scores.player} - امتیاز ربات: ${game.scores.bot})`;
+        } else if (game.scores.bot > game.scores.player) {
+            resultText = `ربات برنده شد! 🤖 (امتیاز ربات: ${game.scores.bot} - امتیاز شما: ${game.scores.player})`;
+        } else {
+            resultText = `بازی مساوی شد! 🤝 (هر دو ${game.scores.player} امتیاز)`;
+        }
+
+        socket.emit('dots_bot_game_over', {
             hLines: game.hLines,
             vLines: game.vLines,
             boxes: game.boxes,
             scores: game.scores,
-            turn: game.turn
-        };
-    }
-
-    function handleDotGameOver(socket, game) {
-        let resultText = '';
-        if (game.scores.player > game.scores.bot) {
-            resultText = 'تبریک! شما ربات را در بازی نقطه خط بردید 🎉';
-        } else if (game.scores.bot > game.scores.player) {
-            resultText = 'ربات برنده بازی نقطه خط شد! 🤖';
-        } else {
-            resultText = 'بازی نقطه خط مساوی شد! 🤝';
-        }
-
-        socket.emit('bot_game_over', {
-            state: getDotGameState(socket.id),
             resultText
         });
-        delete botGames[socket.id];
+        delete dotsBotGames[socket.id];
     }
+    // ==================== پایان بخش نقطه خط ====================
 
     // بخش آنلاین
     socket.on('find_game', () => {
@@ -386,6 +552,7 @@ io.on('connection', (socket) => {
         if (index !== -1) waitingPlayers.splice(index, 1);
 
         if (botGames[socket.id]) delete botGames[socket.id];
+        if (dotsBotGames[socket.id]) delete dotsBotGames[socket.id];
 
         for (const roomId in activeGames) {
             const game = activeGames[roomId];
