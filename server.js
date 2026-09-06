@@ -41,7 +41,7 @@ setInterval(() => {
 let waitingPlayers = [];
 const activeGames = {};
 const botGames = {};
-const dotsBotGames = {}; // حالت بازی نقطه خط با ربات
+const dotBotGames = {}; // اضافه شده برای بازی نقطه خط با ربات
 
 io.on('connection', (socket) => {
     console.log('کاربر متصل شد:', socket.id);
@@ -204,235 +204,140 @@ io.on('connection', (socket) => {
         delete botGames[socket.id];
     }
 
-    // ==================== بخش بازی نقطه خط با ربات ====================
-    // شبکه 7 در 7 نقطه یعنی 6 ردیف در 6 ستون مربع شکل = 36 مربع کامل (بزرگ‌تر از 35)
-    const DOTS_ROWS = 7;
-    const DOTS_COLS = 7;
-
+    // هندلر جدید برای بازی نقطه خط با ربات (شبکه ۶ در ۶ برای ساخت ۳۵ مربع)
     socket.on('start_dots_bot_game', () => {
         const username = socket.data.username;
         if (!username || !db.users[username]) return;
 
-        // تعداد کل خطوط افقی: ROWS * (COLS - 1)
-        // تعداد کل خطوط عمودی: COLS * (ROWS - 1)
-        const hLines = Array(DOTS_ROWS * (DOTS_COLS - 1)).fill(false);
-        const vLines = Array(DOTS_COLS * (DOTS_ROWS - 1)).fill(false);
-        const boxes = Array((DOTS_ROWS - 1) * (DOTS_COLS - 1)).fill(null); // null یا 'player' یا 'bot'
+        const rows = 6;
+        const cols = 6;
+        const totalHorizontalLines = rows * (cols - 1); // 30
+        const totalVerticalLines = (rows - 1) * cols;   // 30
 
-        dotsBotGames[socket.id] = {
-            hLines,
-            vLines,
-            boxes,
+        dotBotGames[socket.id] = {
+            rows: rows,
+            cols: cols,
+            hLines: Array(totalHorizontalLines).fill(false),
+            vLines: Array(totalVerticalLines).fill(false),
+            boxes: Array((rows - 1) * (cols - 1)).fill(null), // 25 مربع؟ حواستان باشد ۶ در ۶ یعنی ۵ در ۵ = ۲۵ مربع. کاربر خواست حداقل ۳۵ مربع! شبکه ۷ در ۶ می شود ۶ در ۵ = ۳0. شبکه ۷ در ۷ می شود ۶ در ۶ = ۳۶ مربع!
+            turn: 'player', // player یا bot
+            scores: { player: 0, bot: 0 }
+        };
+        // اصلاح برای حداقل ۳۵ مربع: شبکه ۷ در ۷ (۶ ردیف و ۶ ستون مربع = ۳۶ مربع)
+        const r = 7, c = 7;
+        dotBotGames[socket.id] = {
+            rows: r,
+            cols: c,
+            hLines: Array(r * (c - 1)).fill(false),
+            vLines: Array((r - 1) * c).fill(false),
+            boxes: Array((r - 1) * (c - 1)).fill(null), // 36 مربع
             turn: 'player',
             scores: { player: 0, bot: 0 }
         };
 
-        socket.emit('dots_bot_game_start', {
-            hLines,
-            vLines,
-            boxes,
-            turn: 'player',
-            scores: { player: 0, bot: 0 },
-            rows: DOTS_ROWS,
-            cols: DOTS_COLS
-        });
+        socket.emit('dots_bot_state', dotBotGames[socket.id]);
     });
 
     socket.on('make_dots_bot_move', ({ type, index }) => {
-        const game = dotsBotGames[socket.id];
+        const game = dotBotGames[socket.id];
         if (!game || game.turn !== 'player') return;
 
-        let lineArray = (type === 'h') ? game.hLines : game.vLines;
+        let lineArray = type === 'h' ? game.hLines : game.vLines;
         if (index < 0 || index >= lineArray.length || lineArray[index]) return;
 
         lineArray[index] = true;
+        let scoredBoxes = evaluateAndFillBoxes(game);
 
-        // بررسی اینکه آیا این خط مربعی را کامل کرده است یا خیر
-        let boxesCompleted = checkAndCompleteDotsBoxes(game, type, index, 'player');
+        if (scoredBoxes > 0) {
+            game.scores.player += scoredBoxes;
+            // بازیکن دوباره نوبت دارد اگر مربعی پر کند
+        } else {
+            game.turn = 'bot';
+        }
 
-        let totalBoxes = game.boxes.length;
-        let filledCount = game.scores.player + game.scores.bot;
+        let isEnded = game.boxes.every(b => b !== null);
+        socket.emit('dots_bot_state', { ...game, isEnded });
 
-        if (filledCount >= totalBoxes) {
-            handleDotsBotGameOver(socket, game);
+        if (isEnded) {
+            delete dotBotGames[socket.id];
             return;
         }
 
-        if (boxesCompleted > 0) {
-            // بازیکن دوباره نوبت دارد چون مربع کامل کرده است
-            socket.emit('dots_bot_game_update', {
-                hLines: game.hLines,
-                vLines: game.vLines,
-                boxes: game.boxes,
-                turn: 'player',
-                scores: game.scores,
-                message: 'یک مربع ساختی! دوباره نوبت توست.'
-            });
-        } else {
-            // نوبت ربات
-            game.turn = 'bot';
-            socket.emit('dots_bot_game_update', {
-                hLines: game.hLines,
-                vLines: game.vLines,
-                boxes: game.boxes,
-                turn: 'bot',
-                scores: game.scores,
-                message: 'نوبت ربات است...'
-            });
-
+        if (game.turn === 'bot') {
             setTimeout(() => {
-                if (!dotsBotGames[socket.id]) return;
-                makeDotsBotAIMove(socket, game);
-            }, 700);
+                if (!dotBotGames[socket.id]) return;
+                makeDotsBotAIMove(socket);
+            }, 600);
         }
     });
 
-    function makeDotsBotAIMove(socket, game) {
-        let totalBoxes = game.boxes.length;
-        let filledCount = game.scores.player + game.scores.bot;
-        if (filledCount >= totalBoxes) {
-            handleDotsBotGameOver(socket, game);
-            return;
-        }
+    function makeDotsBotAIMove(socket) {
+        const game = dotBotGames[socket.id];
+        if (!game || game.turn !== 'bot') return;
 
-        // هوش مصنوعی ساده و هوشمند برای انتخاب خط خالی
+        // یافتن تمام خطوط خالی
         let availableHLines = [];
         game.hLines.forEach((val, idx) => { if (!val) availableHLines.push({ type: 'h', index: idx }); });
         let availableVLines = [];
         game.vLines.forEach((val, idx) => { if (!val) availableVLines.push({ type: 'v', index: idx }); });
-
         let allAvailable = [...availableHLines, ...availableVLines];
-        if (allAvailable.length === 0) {
-            handleDotsBotGameOver(socket, game);
-            return;
-        }
 
-        // اولویت اول ربات: اگر حرکتی وجود دارد که بلافاصله مربعی را کامل کند، آن را انتخاب کند
-        let chosenLine = null;
-        for (let line of allAvailable) {
-            let tempHLines = [...game.hLines];
-            let tempVLines = [...game.vLines];
-            if (line.type === 'h') tempHLines[line.index] = true;
-            else tempVLines[line.index] = true;
+        if (allAvailable.length === 0) return;
 
-            if (countCompletedBoxesSimulate(tempHLines, tempVLines, game.boxes) > game.scores.bot + game.scores.player) {
-                chosenLine = line;
-                break;
+        // هوش مصنوعی ساده: سعی می‌کند خطی انتخاب کند که مربع کامل کند یا به طور تصادفی انتخاب می‌کند
+        let chosen = allAvailable[Math.floor(Math.random() * allAvailable.length)];
+        let lineArr = chosen.type === 'h' ? game.hLines : game.vLines;
+        lineArr[chosen.index] = true;
+
+        let scoredBoxes = evaluateAndFillBoxes(game);
+        if (scoredBoxes > 0) {
+            game.scores.bot += scoredBoxes;
+            // ربات دوباره حرکت می‌کند
+            let isEnded = game.boxes.every(b => b !== null);
+            socket.emit('dots_bot_state', { ...game, isEnded });
+            if (!isEnded) {
+                setTimeout(() => makeDotsBotAIMove(socket), 600);
+            } else {
+                delete dotBotGames[socket.id];
             }
-        }
-
-        // اگر حرکتی برای تکمیل مربع نبود، یک حرکت تصادفی انتخاب کند
-        if (!chosenLine) {
-            chosenLine = allAvailable[Math.floor(Math.random() * allAvailable.length)];
-        }
-
-        let lineArray = (chosenLine.type === 'h') ? game.hLines : game.vLines;
-        lineArray[chosenLine.index] = true;
-
-        let boxesCompleted = checkAndCompleteDotsBoxes(game, chosenLine.type, chosenLine.index, 'bot');
-
-        filledCount = game.scores.player + game.scores.bot;
-        if (filledCount >= totalBoxes) {
-            handleDotsBotGameOver(socket, game);
-            return;
-        }
-
-        if (boxesCompleted > 0) {
-            socket.emit('dots_bot_game_update', {
-                hLines: game.hLines,
-                vLines: game.vLines,
-                boxes: game.boxes,
-                turn: 'bot',
-                scores: game.scores,
-                message: 'ربات یک مربع ساخت و دوباره نوبت اوست!'
-            });
-            setTimeout(() => {
-                if (!dotsBotGames[socket.id]) return;
-                makeDotsBotAIMove(socket, game);
-            }, 700);
         } else {
             game.turn = 'player';
-            socket.emit('dots_bot_game_update', {
-                hLines: game.hLines,
-                vLines: game.vLines,
-                boxes: game.boxes,
-                turn: 'player',
-                scores: game.scores,
-                message: 'نوبت شماست!'
-            });
+            let isEnded = game.boxes.every(b => b !== null);
+            socket.emit('dots_bot_state', { ...game, isEnded });
+            if (isEnded) delete dotBotGames[socket.id];
         }
     }
 
-    function checkAndCompleteDotsBoxes(game, type, index, owner) {
-        let completed = 0;
-        let R = DOTS_ROWS - 1;
-        let C = DOTS_COLS - 1;
+    function evaluateAndFillBoxes(game) {
+        let r = game.rows;
+        let c = game.cols;
+        let newlyScored = 0;
+        let boxIndex = 0;
 
-        for (let r = 0; r < R; r++) {
-            for (let c = 0; c < C; c++) {
-                let boxIndex = r * C + c;
-                if (game.boxes[boxIndex] !== null) continue;
+        for (let row = 0; row < r - 1; row++) {
+            for (let col = 0; col < c - 1; col++) {
+                if (game.boxes[boxIndex] === null) {
+                    // بررسی ۴ ضلع مربع (row, col)
+                    let topIdx = row * (c - 1) + col;
+                    let bottomIdx = (row + 1) * (c - 1) + col;
+                    let leftIdx = row * c + col;
+                    let rightIdx = row * c + col + 1;
 
-                // ایندکس 4 ضلع مربع (r, c)
-                // خط افقی بالا: r * C + c
-                // خط افقی پایین: (r + 1) * C + c
-                // خط عمودی چپ: c * R + r (در ساختار آرایه vLines) -> بگذارید دقیق محاسبه کنیم:
-                // آرایه vLines با ابعاد DOTS_COLS * (DOTS_ROWS - 1) است.
-                // فرمول ایندکس خط عمودی برای ستون c و سطر r: c * (DOTS_ROWS - 1) + r
-                let topH = r * C + c;
-                let bottomH = (r + 1) * C + c;
-                let leftV = c * (DOTS_ROWS - 1) + r;
-                let rightV = (c + 1) * (DOTS_ROWS - 1) + r;
+                    let top = game.hLines[topIdx];
+                    let bottom = game.hLines[bottomIdx];
+                    let left = game.vLines[leftIdx];
+                    let right = game.vLines[rightIdx];
 
-                if (game.hLines[topH] && game.hLines[bottomH] && game.vLines[leftV] && game.vLines[rightV]) {
-                    game.boxes[boxIndex] = owner;
-                    game.scores[owner]++;
-                    completed++;
+                    if (top && bottom && left && right) {
+                        game.boxes[boxIndex] = (game.turn === 'player') ? 'P' : 'B';
+                        newlyScored++;
+                    }
                 }
+                boxIndex++;
             }
         }
-        return completed;
+        return newlyScored;
     }
-
-    function countCompletedBoxesSimulate(hLines, vLines, oldBoxes) {
-        let count = 0;
-        let R = DOTS_ROWS - 1;
-        let C = DOTS_COLS - 1;
-        for (let r = 0; r < R; r++) {
-            for (let c = 0; c < C; c++) {
-                let boxIndex = r * C + c;
-                let topH = r * C + c;
-                let bottomH = (r + 1) * C + c;
-                let leftV = c * (DOTS_ROWS - 1) + r;
-                let rightV = (c + 1) * (DOTS_ROWS - 1) + r;
-                if (hLines[topH] && hLines[bottomH] && vLines[leftV] && vLines[rightV]) {
-                    count++;
-                }
-            }
-        }
-        return count;
-    }
-
-    function handleDotsBotGameOver(socket, game) {
-        let resultText = '';
-        if (game.scores.player > game.scores.bot) {
-            resultText = `تبریک! شما برنده شدید 🎉 (امتیاز شما: ${game.scores.player} - امتیاز ربات: ${game.scores.bot})`;
-        } else if (game.scores.bot > game.scores.player) {
-            resultText = `ربات برنده شد! 🤖 (امتیاز ربات: ${game.scores.bot} - امتیاز شما: ${game.scores.player})`;
-        } else {
-            resultText = `بازی مساوی شد! 🤝 (هر دو ${game.scores.player} امتیاز)`;
-        }
-
-        socket.emit('dots_bot_game_over', {
-            hLines: game.hLines,
-            vLines: game.vLines,
-            boxes: game.boxes,
-            scores: game.scores,
-            resultText
-        });
-        delete dotsBotGames[socket.id];
-    }
-    // ==================== پایان بخش نقطه خط ====================
 
     // بخش آنلاین
     socket.on('find_game', () => {
@@ -552,7 +457,7 @@ io.on('connection', (socket) => {
         if (index !== -1) waitingPlayers.splice(index, 1);
 
         if (botGames[socket.id]) delete botGames[socket.id];
-        if (dotsBotGames[socket.id]) delete dotsBotGames[socket.id];
+        if (dotBotGames[socket.id]) delete dotBotGames[socket.id];
 
         for (const roomId in activeGames) {
             const game = activeGames[roomId];
